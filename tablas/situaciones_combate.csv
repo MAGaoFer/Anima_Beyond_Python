@@ -1,0 +1,20 @@
+Situaciones de Combate,Modificador a la Habilidad de Ataque,Modificador a la Habilidad de Parada,Modificador a la Habilidad de Defensa,Modificador al Turno,Modificador a Acción
+Flanco,-10,-30,-30,-,-
+Espalda,-30,-80,-80,-,-
+Sorpresa,-,-90,-90,-,-90
+Ceguera parcial,-30,-30,-15,-,-30
+Ceguera absoluta,-100,-80,-80,-,-90
+Posición superior,+20,-,-,-,-
+Derribado,-30,-30,-30,-10,-30
+Parálisis menor,-20,-20,-40,-20,-40
+Parálisis parcial,-80,-80,-80,-30,-60
+Parálisis completa,-200,-200,-200,-100,-200
+Amenazado,-20,-120,-120,-50,-100
+Levitando,-20,-20,-40,-,-60
+Vuelto tipo 7 a 14,+10,+10,+10,+10,-
+Vuelo 15 o superior,+15,+10,+20,+10,-
+Cargando,+10,-10,-20,-,-
+Desenfundar,-25,-25,-,-,-25
+Espacio reducido,-40 Esp,-40 Esp,-40,-,-20
+Adversario pequeño,-10,-,-,-,-
+Adversario diminuto,-20,-10,-,-,-

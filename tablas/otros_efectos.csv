@@ -1,0 +1,7 @@
+Efectos,Modificador a toda acción,Notas
+Miedo,-60,"Trata de evitar lo que le producirá miedo, puede estar en presencia de lo que le da miedo sin huir."
+Terror,-60,"Paralizado, y tratara de huir a toda costa."
+Dolor,-20 / -40 / -80,Leve / Intenso / Extremo
+Debilidad,-,El pj pierde 1 punto de sus 4 características físicas por cada 10 puntos que falle la Resistencia.
+Ira,-,"El pj pierde el uso de su razón y se lanza sobre lo que le causa ira. Usaran sus técnicas mas poderosas y potenciaran sus acciones con puntos de cansancio, su ira durara 1 minuto por cada punto que fallo la resistencia."
+Fascinación,-20,

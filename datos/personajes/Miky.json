@@ -1,0 +1,17 @@
+{
+  "tipo": "Personaje",
+  "nombre": "Miky",
+  "puntos_vida": 100,
+  "puntos_cansancio": 8,
+  "puntos_ki": 30,
+  "turno": 50,
+  "habilidad_ataque": 100,
+  "habilidad_defensa": 90,
+  "daño": 30,
+  "armadura": 2,
+  "resistencia_fisica": 0,
+  "resistencia_enfermedades": 0,
+  "resistencia_venenos": 0,
+  "resistencia_magica": 0,
+  "resistencia_psiquica": 0
+}

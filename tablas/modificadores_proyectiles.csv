@@ -1,0 +1,16 @@
+Modificadores a Proyectiles,Modificador a la Habilidad de Ataque
+Desplazarse a más de ¼ del Movimiento,-10
+Correr al máximo Movimiento,-50
+Escasa visibilidad,-20
+El blanco tiene cobertura,-40
+Cambiar de blanco,-10
+El blanco se mueve a >8,-20
+El blanco se mueve a 10,-40
+El blanco se mueve a >10,-60
+Haber defendido en el mismo asalto,-40
+Atacar por encima del alcance efectivo,-30
+Blanco grande,+30
+Apuntar 1 turno,+10
+Apuntar 2 turnos,+20
+Apuntar 3 turnos,+30
+A bocajarro,+30

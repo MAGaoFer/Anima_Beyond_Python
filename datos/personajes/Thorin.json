@@ -1,0 +1,12 @@
+{
+  "tipo": "Personaje",
+  "nombre": "Thorin",
+  "puntos_vida": 180,
+  "puntos_cansancio": 10,
+  "puntos_ki": 50,
+  "turno": 110,
+  "habilidad_ataque": 150,
+  "habilidad_defensa": 130,
+  "daño": 90,
+  "armadura": 80
+}

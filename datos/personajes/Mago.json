@@ -1,0 +1,14 @@
+{
+  "tipo": "Mago",
+  "nombre": "Mago",
+  "puntos_vida": 100,
+  "puntos_cansancio": 8,
+  "puntos_ki": 20,
+  "turno": 50,
+  "habilidad_ataque": 0,
+  "habilidad_defensa": 0,
+  "daño": 40,
+  "armadura": 0,
+  "zeon": 300,
+  "proyeccion_magica": 120
+}

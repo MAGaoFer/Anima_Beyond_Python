@@ -1,0 +1,15 @@
+{
+  "tipo": "Mentalista",
+  "nombre": "Xavier",
+  "puntos_vida": 130,
+  "puntos_cansancio": 8,
+  "puntos_ki": 70,
+  "turno": 100,
+  "habilidad_ataque": 0,
+  "habilidad_defensa": 0,
+  "daño": 55,
+  "armadura": 45,
+  "potencial_psiquico": 200,
+  "proyeccion_psiquica": 170,
+  "cv_libres": 15
+}

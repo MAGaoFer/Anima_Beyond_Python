@@ -1,0 +1,62 @@
+{
+  "tipo": "Personaje",
+  "nombre": "Allete",
+  "puntos_vida": 95,
+  "puntos_cansancio": 6,
+  "puntos_ki": 0,
+  "turno": 100,
+  "habilidad_ataque": 85,
+  "habilidad_defensa": 75,
+  "daño": 0,
+  "armadura": 0,
+  "armaduras_ta": {
+    "FIL": 0,
+    "CON": 0,
+    "PEN": 0,
+    "CAL": 0,
+    "ELE": 0,
+    "FRI": 0,
+    "ENE": 0
+  },
+  "entereza_armadura": 0,
+  "resistencia_fisica": 35,
+  "resistencia_enfermedades": 35,
+  "resistencia_venenos": 35,
+  "resistencia_magica": 40,
+  "resistencia_psiquica": 35,
+  "es_pj": false,
+  "arma_nombre": "Estoque",
+  "arma_turno": 95,
+  "arma_danio": 45,
+  "arma_rotura": 2,
+  "arma_entereza": 11,
+  "arma_tipo_danio": "PEN",
+  "armas": [
+    {
+      "nombre": "Estoque",
+      "turno": 95,
+      "daño": 45,
+      "rotura": 2,
+      "entereza": 11,
+      "tipo_danio": "PEN",
+      "habilidad_ataque": 85,
+      "habilidad_parada": 75,
+      "es_escudo": false
+    },
+    {
+      "nombre": "Vara",
+      "turno": 90,
+      "daño": 40,
+      "rotura": 0,
+      "entereza": 11,
+      "tipo_danio": "CON",
+      "habilidad_ataque": 85,
+      "habilidad_parada": 75,
+      "es_escudo": false
+    }
+  ],
+  "turno_doble_armas": 0,
+  "tipo_defensa_preferida": "Esquiva",
+  "bonificador": 0,
+  "penalizador": 0
+}

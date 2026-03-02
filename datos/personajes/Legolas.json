@@ -1,0 +1,12 @@
+{
+  "tipo": "Personaje",
+  "nombre": "Legolas",
+  "puntos_vida": 150,
+  "puntos_cansancio": 5,
+  "puntos_ki": 60,
+  "turno": 130,
+  "habilidad_ataque": 160,
+  "habilidad_defensa": 140,
+  "daño": 80,
+  "armadura": 50
+}

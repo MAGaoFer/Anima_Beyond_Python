@@ -1,0 +1,7 @@
+Posición de combate,Modifica,Modificador,Notas
+Defensa total,Habilidad de Defensa,+30,No puede atacar
+A la Defensiva,Habilidad de Defensa / Habilidad de Ataque,+10 / -30,
+A la Ofensiva,Habilidad de Ataque / Habilidad de Defensa,+10 / -30,
+Resistir el Golpe,Habilidad de Defensa,½,Recibir impactos no quita turno
+Ataque Total,Habilidad de Ataque,+30,"Habilidad de Defensa = 0, recibir impactos no quita turno"
+Prever Sorpresa,Toda acción,-40,"Designa objetivos, no hay sorpresa, pero tienes penalizador por su primera acción."

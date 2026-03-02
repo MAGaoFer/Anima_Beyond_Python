@@ -1,0 +1,10 @@
+# Sistema de Gestión de Personajes para Ánima: Beyond Fantasy
+
+# Importación de fichas Excel (.xlsm)
+openpyxl>=3.1.0
+
+# Renderizado/reescalado de portada en GUI
+Pillow>=10.0.0
+
+# Dependencia de desarrollo para ejecutar la suite de tests
+pytest>=8.0.0

@@ -1,0 +1,51 @@
+{
+  "tipo": "Personaje",
+  "nombre": "Fausto",
+  "puntos_vida": 104,
+  "puntos_cansancio": 8,
+  "puntos_ki": 0,
+  "turno": 95,
+  "habilidad_ataque": 70,
+  "habilidad_defensa": 65,
+  "daño": 0,
+  "armadura": 5,
+  "armaduras_ta": {
+    "FIL": 5,
+    "CON": 5,
+    "PEN": 5,
+    "CAL": 4,
+    "ELE": 0,
+    "FRI": 4,
+    "ENE": 2
+  },
+  "entereza_armadura": 18,
+  "resistencia_fisica": 40,
+  "resistencia_enfermedades": 40,
+  "resistencia_venenos": 40,
+  "resistencia_magica": 65,
+  "resistencia_psiquica": 35,
+  "es_pj": false,
+  "arma_nombre": "Ashurian",
+  "arma_turno": 5,
+  "arma_danio": 100,
+  "arma_rotura": 5,
+  "arma_entereza": 15,
+  "arma_tipo_danio": "FIL",
+  "armas": [
+    {
+      "nombre": "Ashurian",
+      "turno": 5,
+      "daño": 100,
+      "rotura": 5,
+      "entereza": 15,
+      "tipo_danio": "FIL",
+      "habilidad_ataque": 70,
+      "habilidad_parada": 65,
+      "es_escudo": false
+    }
+  ],
+  "turno_doble_armas": null,
+  "tipo_defensa_preferida": "Parada",
+  "bonificador": 0,
+  "penalizador": 0
+}

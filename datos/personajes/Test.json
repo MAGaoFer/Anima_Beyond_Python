@@ -1,0 +1,60 @@
+{
+  "tipo": "Personaje",
+  "nombre": "Test",
+  "puntos_vida": 100,
+  "puntos_cansancio": 10,
+  "puntos_ki": 30,
+  "turno": 50,
+  "habilidad_ataque": 100,
+  "habilidad_defensa": 100,
+  "daño": 20,
+  "armadura": 2,
+  "armaduras_ta": {
+    "FIL": 2,
+    "CON": 2,
+    "PEN": 2,
+    "CAL": 2,
+    "ELE": 2,
+    "FRI": 2,
+    "ENE": 2
+  },
+  "entereza_armadura": 0,
+  "resistencia_fisica": 40,
+  "resistencia_enfermedades": 40,
+  "resistencia_venenos": 40,
+  "resistencia_magica": 40,
+  "resistencia_psiquica": 40,
+  "es_pj": true,
+  "arma_nombre": "Espada",
+  "arma_turno": 20,
+  "arma_danio": 40,
+  "arma_rotura": 4,
+  "arma_entereza": 12,
+  "arma_tipo_danio": "FIL",
+  "armas": [
+    {
+      "nombre": "Espada",
+      "turno": 20,
+      "daño": 40,
+      "rotura": 4,
+      "entereza": 12,
+      "tipo_danio": "FIL",
+      "habilidad_ataque": 100,
+      "habilidad_parada": 100,
+      "es_escudo": false
+    },
+    {
+      "nombre": "Escudo",
+      "turno": 25,
+      "daño": 30,
+      "rotura": 0,
+      "entereza": 15,
+      "tipo_danio": "CON",
+      "habilidad_ataque": 0,
+      "habilidad_parada": 0,
+      "es_escudo": true
+    }
+  ],
+  "turno_doble_armas": 0,
+  "tipo_defensa_preferida": "Parada"
+}

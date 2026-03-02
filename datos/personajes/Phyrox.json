@@ -1,0 +1,18 @@
+{
+  "tipo": "Personaje",
+  "nombre": "Phyrox",
+  "puntos_vida": 100,
+  "puntos_cansancio": 8,
+  "puntos_ki": 30,
+  "turno": 30,
+  "habilidad_ataque": 100,
+  "habilidad_defensa": 80,
+  "daño": 25,
+  "armadura": 2,
+  "resistencia_fisica": 40,
+  "resistencia_enfermedades": 40,
+  "resistencia_venenos": 40,
+  "resistencia_magica": 35,
+  "resistencia_psiquica": 35,
+  "es_pj": true
+}
