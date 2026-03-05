@@ -106,46 +106,6 @@ Pasos para usuario final:
 
 Los personajes se guardarán en `Personajes/personajes/` junto a la aplicación.
 
-## Publicar binarios con tag/release (GitHub)
-
-Este repo incluye el workflow `.github/workflows/windows-release.yml`.
-
-### Flujo recomendado
-
-1. Sube tus cambios a la rama principal.
-2. Crea un tag de versión (ejemplo `v1.2.0`):
-
-```bash
-git tag v1.2.0
-git push origin v1.2.0
-```
-
-3. GitHub Actions compila en Windows y genera `AnimaBeyondFantasy_Windows_Portable.zip`.
-4. Se crea/actualiza la release del tag y se adjunta el ZIP automáticamente.
-
-### Dónde lo descargan los usuarios
-
-En la sección **Releases** del repositorio, abren la versión y descargan `AnimaBeyondFantasy_Windows_Portable.zip`.
-
-Si quieres ahorrar tiempo al publicar, usa la plantilla de texto en `docs/PLANTILLA_RELEASE_WINDOWS.md`.
-
-## Tests
-
-Para ejecutar la suite:
-
-```bash
-python -m pytest
-```
-
-## Estructura (resumen)
-
-- `main.py`: entrada principal (GUI/CLI)
-- `interfaz/`: ventanas y flujo de GUI
-- `combate/`: motor de combate
-- `modelos/`: modelos de personaje
-- `almacenamiento/`: persistencia JSON e importador Excel
-- `tests/`: tests automáticos
-
 ## Notas
 
 - Los personajes se guardan en `datos/personajes/`.
