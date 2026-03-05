@@ -95,15 +95,54 @@ python main.py --cli
 3. Guarda los cambios.
 4. Abre **Combate** para añadir PJ/PNJ y empezar rondas.
 
-## Ejecutable de Windows
+## Windows para usuarios (sin `.bat`)
 
-Si quieres generar `.exe` en Windows:
+Los usuarios finales **no** tienen que ejecutar `build_windows_exe.bat`.
+
+Pasos para usuario final:
+
+1. Ir a **Releases** del repositorio.
+2. Descargar `AnimaBeyondFantasy_Windows_Portable.zip`.
+3. Descomprimir el ZIP en una carpeta con permisos de escritura (por ejemplo, Escritorio o Documentos).
+4. Ejecutar `AnimaBeyondFantasy.exe`.
+
+Los personajes se guardarán en `Personajes/personajes/` junto a la aplicación.
+
+## Generar ZIP de distribución (mantenedor)
+
+Si quieres preparar tú el paquete portable en Windows (incluye `.exe` + carpetas + estructura para personajes):
 
 ```cmd
 build_windows_exe.bat
 ```
 
-El resultado se prepara en la carpeta `App_Windows/`.
+El script genera:
+
+- Carpeta `App_Windows/` lista para usar
+- Archivo `AnimaBeyondFantasy_Windows_Portable.zip` listo para compartir
+
+## Publicar binarios con tag/release (GitHub)
+
+Este repo incluye el workflow `.github/workflows/windows-release.yml`.
+
+### Flujo recomendado
+
+1. Sube tus cambios a la rama principal.
+2. Crea un tag de versión (ejemplo `v1.2.0`):
+
+```bash
+git tag v1.2.0
+git push origin v1.2.0
+```
+
+3. GitHub Actions compila en Windows y genera `AnimaBeyondFantasy_Windows_Portable.zip`.
+4. Se crea/actualiza la release del tag y se adjunta el ZIP automáticamente.
+
+### Dónde lo descargan los usuarios
+
+En la sección **Releases** del repositorio, abren la versión y descargan `AnimaBeyondFantasy_Windows_Portable.zip`.
+
+Si quieres ahorrar tiempo al publicar, usa la plantilla de texto en `docs/PLANTILLA_RELEASE_WINDOWS.md`.
 
 ## Tests
 

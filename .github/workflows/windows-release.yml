@@ -1,0 +1,73 @@
+name: Build Windows ZIP and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements-build.txt
+
+      - name: Build onefile EXE
+        run: |
+          python -m PyInstaller --noconfirm --clean --onefile --windowed --name AnimaBeyondFantasy --add-data "assets;assets" --add-data "tablas;tablas" main.py
+
+      - name: Build portable folder
+        run: |
+          python -m PyInstaller --noconfirm --clean --onedir --windowed --name AnimaBeyondFantasy_Portable --add-data "assets;assets" --add-data "tablas;tablas" main.py
+
+      - name: Prepare portable package folder
+        shell: pwsh
+        run: |
+          if (Test-Path "App_Windows") { Remove-Item "App_Windows" -Recurse -Force }
+          New-Item -ItemType Directory -Path "App_Windows" | Out-Null
+          Copy-Item "dist/AnimaBeyondFantasy.exe" "App_Windows/AnimaBeyondFantasy.exe" -Force
+          Copy-Item "dist/AnimaBeyondFantasy_Portable" "App_Windows/AnimaBeyondFantasy_Portable" -Recurse -Force
+          New-Item -ItemType Directory -Path "App_Windows/Personajes/personajes" -Force | Out-Null
+          @"
+          ANIMA BEYOND FANTASY - APP WINDOWS
+
+          1) Ejecuta directamente AnimaBeyondFantasy.exe (sin instalación)
+          2) También tienes la versión portable completa en la carpeta AnimaBeyondFantasy_Portable
+          3) Los personajes se guardan junto al .exe en la carpeta Personajes\personajes\
+
+          Recomendación: no ejecutar desde C:\Program Files para evitar problemas de permisos.
+          "@ | Set-Content "App_Windows/INSTRUCCIONES.txt" -Encoding UTF8
+
+      - name: Build ZIP package
+        shell: pwsh
+        run: |
+          if (Test-Path "AnimaBeyondFantasy_Windows_Portable.zip") { Remove-Item "AnimaBeyondFantasy_Windows_Portable.zip" -Force }
+          Compress-Archive -Path "App_Windows/*" -DestinationPath "AnimaBeyondFantasy_Windows_Portable.zip" -Force
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AnimaBeyondFantasy_Windows_Portable
+          path: AnimaBeyondFantasy_Windows_Portable.zip
+
+      - name: Publish GitHub release asset
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: AnimaBeyondFantasy_Windows_Portable.zip
+          generate_release_notes: true
