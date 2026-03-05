@@ -95,9 +95,7 @@ python main.py --cli
 3. Guarda los cambios.
 4. Abre **Combate** para añadir PJ/PNJ y empezar rondas.
 
-## Windows para usuarios (sin `.bat`)
-
-Los usuarios finales **no** tienen que ejecutar `build_windows_exe.bat`.
+## Windows para usuarios
 
 Pasos para usuario final:
 
@@ -107,19 +105,6 @@ Pasos para usuario final:
 4. Ejecutar `AnimaBeyondFantasy.exe`.
 
 Los personajes se guardarán en `Personajes/personajes/` junto a la aplicación.
-
-## Generar ZIP de distribución (mantenedor)
-
-Si quieres preparar tú el paquete portable en Windows (incluye `.exe` + carpetas + estructura para personajes):
-
-```cmd
-build_windows_exe.bat
-```
-
-El script genera:
-
-- Carpeta `App_Windows/` lista para usar
-- Archivo `AnimaBeyondFantasy_Windows_Portable.zip` listo para compartir
 
 ## Publicar binarios con tag/release (GitHub)
 
