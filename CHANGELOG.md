@@ -14,6 +14,7 @@ El formato está inspirado en Keep a Changelog y versionado semántico (`MAJOR.M
 
 ### Fixed
 - Pendiente.
+- Ajuste técnico para forzar nuevo disparo de pipeline de release.
 
 ## [1.3.0] - 2026-03-05
 
