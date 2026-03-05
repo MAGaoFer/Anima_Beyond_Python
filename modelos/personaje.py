@@ -33,6 +33,42 @@ def normalizar_arma(arma):
     }
 
 
+def normalizar_habilidades_secundarias(habilidades):
+    """Normaliza la estructura {categoria: {habilidad: valor}}."""
+    if not isinstance(habilidades, dict):
+        return {}
+
+    resultado = {}
+    for categoria, valores in habilidades.items():
+        if not isinstance(valores, dict):
+            continue
+        categoria_txt = str(categoria).strip()
+        if not categoria_txt:
+            continue
+
+        categoria_limpia = {}
+        for habilidad, valor in valores.items():
+            habilidad_txt = str(habilidad).strip()
+            if not habilidad_txt:
+                continue
+
+            if valor is None:
+                valor_limpio = '-'
+            elif isinstance(valor, bool):
+                valor_limpio = int(valor)
+            elif isinstance(valor, (int, float)):
+                valor_limpio = int(valor)
+            else:
+                texto = str(valor).strip()
+                valor_limpio = texto if texto else '-'
+            categoria_limpia[habilidad_txt] = valor_limpio
+
+        if categoria_limpia:
+            resultado[categoria_txt] = categoria_limpia
+
+    return resultado
+
+
 def personaje_tiene_ki(personaje):
     """Indica si el personaje usa Ki como recurso propio."""
     return bool(getattr(personaje, 'usa_ki', False))
@@ -144,6 +180,7 @@ class Personaje:
         self.usa_magia = False
         self.usa_mentalismo = False
         self.usa_ki = False
+        self.habilidades_secundarias = {}
 
     @property
     def arma_ta(self):
@@ -202,7 +239,8 @@ class Personaje:
             'turno_doble_armas': self.turno_doble_armas,
             'tipo_defensa_preferida': self.tipo_defensa_preferida,
             'bonificador': self.bonificador,
-            'penalizador': self.penalizador
+            'penalizador': self.penalizador,
+            'habilidades_secundarias': normalizar_habilidades_secundarias(getattr(self, 'habilidades_secundarias', {})),
         }
     
     @classmethod
@@ -216,7 +254,7 @@ class Personaje:
         Returns:
             Personaje: Nueva instancia del personaje
         """
-        return cls(
+        personaje = cls(
             nombre=datos['nombre'],
             puntos_vida=datos['puntos_vida'],
             puntos_cansancio=datos['puntos_cansancio'],
@@ -247,6 +285,8 @@ class Personaje:
             bonificador=datos.get('bonificador', 0),
             penalizador=datos.get('penalizador', 0)
         )
+        personaje.habilidades_secundarias = normalizar_habilidades_secundarias(datos.get('habilidades_secundarias', {}))
+        return personaje
     
     def __str__(self):
         """

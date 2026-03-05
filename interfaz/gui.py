@@ -3,6 +3,7 @@
 import csv
 import json
 import tkinter as tk
+import unicodedata
 from pathlib import Path
 from tkinter import filedialog, messagebox, simpledialog, ttk
 
@@ -36,6 +37,7 @@ from modelos.personaje import (
     personaje_puede_usar_magia,
     personaje_puede_usar_mentalismo,
     personaje_tiene_ki,
+    normalizar_habilidades_secundarias,
 )
 from utilidades.rutas import ruta_recurso
 
@@ -104,6 +106,13 @@ def habilitar_scroll_rueda(canvas, widget):
 
     widget.bind("<Enter>", bind_scroll)
     widget.bind("<Leave>", unbind_scroll)
+
+
+def _normalizar_texto(texto):
+    if texto is None:
+        return ""
+    t = str(texto).strip().lower()
+    return "".join(c for c in unicodedata.normalize("NFD", t) if unicodedata.category(c) != "Mn")
 
 
 class AppGUI:
@@ -202,6 +211,11 @@ class AppGUI:
             text="Combate",
             command=lambda: VentanaCombate(self.raiz, self.almacenamiento),
         ).pack(fill="x", pady=6)
+        ttk.Button(
+            botones,
+            text="Modo Secundarias",
+            command=lambda: VentanaSecundarias(self.raiz, self.almacenamiento),
+        ).pack(fill="x", pady=6)
         ttk.Button(botones, text="Salir de la aplicación", command=self.raiz.destroy).pack(fill="x", pady=6)
 
     def _programar_actualizacion_portada(self, _event=None):
@@ -269,7 +283,8 @@ class AppGUI:
             f"Categoría Excel: {metadatos.get('categoria_excel', '-') }\n"
             f"ACT detectado: {metadatos.get('act', 0)}\n"
             f"Acumulación de Ki detectada: {metadatos.get('acumulacion_ki', 0)}\n"
-            f"Armas detectadas: {metadatos.get('armas_detectadas', 0)}"
+            f"Armas detectadas: {metadatos.get('armas_detectadas', 0)}\n"
+            f"Habilidades secundarias detectadas: {metadatos.get('habilidades_secundarias_total', 0)}"
         )
         messagebox.showinfo(
             "Importar Excel",
@@ -292,6 +307,7 @@ class PersonajeEditor(tk.Toplevel):
         self.almacenamiento = almacenamiento
         self.callback_menu = callback_menu
         self.personaje_original = personaje
+        self.habilidades_secundarias_vars = {}
         self.title("Editar personaje" if personaje else "Crear personaje")
         self.geometry("880x720")
         self.minsize(840, 640)
@@ -350,6 +366,7 @@ class PersonajeEditor(tk.Toplevel):
                     "es_escudo": tk.BooleanVar(value=False),
                 }
             )
+        self.habilidades_secundarias_vars = {}
 
     def _crear_ui(self):
         marco_principal = ttk.Frame(self, padding=12)
@@ -449,6 +466,10 @@ class PersonajeEditor(tk.Toplevel):
         self._fila_campo(armadura, "RM", self.vars["resistencia_magica"], 11)
         self._fila_campo(armadura, "RP", self.vars["resistencia_psiquica"], 12)
 
+        self.seccion_secundarias = ttk.LabelFrame(contenido, text="Habilidades secundarias", padding=10)
+        self.seccion_secundarias.pack(fill="x", pady=6)
+        self._actualizar_habilidades_secundarias_ui({})
+
         acciones = ttk.Frame(contenido, padding=(0, 8, 0, 10))
         acciones.pack(fill="x")
         ttk.Button(acciones, text="Volver al menú", command=self.destroy).pack(side="left")
@@ -501,6 +522,88 @@ class PersonajeEditor(tk.Toplevel):
                 arma_frame.grid()
             else:
                 arma_frame.grid_remove()
+
+    def _actualizar_habilidades_secundarias_ui(self, habilidades):
+        for widget in self.seccion_secundarias.winfo_children():
+            widget.destroy()
+
+        self.habilidades_secundarias_vars = {}
+        controles = ttk.Frame(self.seccion_secundarias)
+        controles.grid(row=0, column=0, columnspan=3, sticky="ew", pady=(0, 6))
+        ttk.Button(controles, text="Añadir habilidad", command=self._anadir_habilidad_secundaria).pack(side="left")
+
+        fila = 1
+        for categoria, valores in (habilidades or {}).items():
+            if not isinstance(valores, dict) or not valores:
+                continue
+            ttk.Label(self.seccion_secundarias, text=categoria).grid(row=fila, column=0, columnspan=3, sticky="w", pady=(4, 2))
+            fila += 1
+            for habilidad, valor in valores.items():
+                var = tk.StringVar(value=str(valor))
+                self.habilidades_secundarias_vars[(categoria, habilidad)] = var
+                ttk.Label(self.seccion_secundarias, text=habilidad).grid(row=fila, column=0, sticky="w", padx=(8, 10), pady=2)
+                ttk.Entry(self.seccion_secundarias, textvariable=var).grid(row=fila, column=1, sticky="ew", pady=2)
+                ttk.Button(
+                    self.seccion_secundarias,
+                    text="Quitar",
+                    command=lambda c=categoria, h=habilidad: self._quitar_habilidad_secundaria(c, h),
+                ).grid(row=fila, column=2, sticky="e", padx=(8, 0), pady=2)
+                fila += 1
+
+        if not self.habilidades_secundarias_vars:
+            ttk.Label(
+                self.seccion_secundarias,
+                text="Sin datos de habilidades secundarias. Puedes añadirlas manualmente con el botón superior.",
+            ).grid(row=1, column=0, columnspan=3, sticky="w")
+
+        self.seccion_secundarias.columnconfigure(1, weight=1)
+
+    def _anadir_habilidad_secundaria(self):
+        categoria = simpledialog.askstring(
+            "Nueva habilidad secundaria",
+            "Categoría (ej: Atléticas, Sociales, Percepción, Intelectuales, Vigor, Subterfugio, Creativas, Especiales):",
+            parent=self,
+        )
+        if categoria is None:
+            return
+        categoria = categoria.strip()
+        if not categoria:
+            messagebox.showwarning("Habilidad secundaria", "Debes indicar una categoría.", parent=self)
+            return
+
+        habilidad = simpledialog.askstring("Nueva habilidad secundaria", "Nombre de la habilidad:", parent=self)
+        if habilidad is None:
+            return
+        habilidad = habilidad.strip()
+        if not habilidad or habilidad == "-":
+            messagebox.showwarning("Habilidad secundaria", "Debes indicar un nombre válido de habilidad.", parent=self)
+            return
+
+        valor_txt = simpledialog.askstring(
+            "Nueva habilidad secundaria",
+            "Valor final (número o '-').",
+            initialvalue="-",
+            parent=self,
+        )
+        if valor_txt is None:
+            return
+        valor_txt = valor_txt.strip() or "-"
+        try:
+            valor = int(valor_txt) if valor_txt != "-" else "-"
+        except ValueError:
+            valor = valor_txt
+
+        habilidades = self._habilidades_secundarias_desde_formulario()
+        habilidades.setdefault(categoria, {})[habilidad] = valor
+        self._actualizar_habilidades_secundarias_ui(habilidades)
+
+    def _quitar_habilidad_secundaria(self, categoria, habilidad):
+        habilidades = self._habilidades_secundarias_desde_formulario()
+        if categoria in habilidades and habilidad in habilidades[categoria]:
+            habilidades[categoria].pop(habilidad, None)
+            if not habilidades[categoria]:
+                habilidades.pop(categoria, None)
+        self._actualizar_habilidades_secundarias_ui(habilidades)
 
     def _cargar_personaje(self, personaje):
         self.vars["nombre"].set(personaje.nombre)
@@ -577,6 +680,8 @@ class PersonajeEditor(tk.Toplevel):
                 datos["es_escudo"].set(bool(arma.get("es_escudo", False)))
             self._actualizar_armas_visibles()
 
+        self._actualizar_habilidades_secundarias_ui(getattr(personaje, "habilidades_secundarias", {}))
+
     def _a_entero(self, valor, minimo=0):
         try:
             numero = int(valor)
@@ -605,6 +710,27 @@ class PersonajeEditor(tk.Toplevel):
             }
             armas.append(arma)
         return armas
+
+    def _habilidades_secundarias_desde_formulario(self):
+        habilidades = {}
+        for (categoria, habilidad), variable in self.habilidades_secundarias_vars.items():
+            texto = variable.get().strip()
+            if not texto:
+                texto = "-"
+
+            if texto != "-":
+                try:
+                    valor = int(texto)
+                except ValueError:
+                    valor = texto
+            else:
+                valor = texto
+
+            habilidades.setdefault(categoria, {})[habilidad] = valor
+
+        if "Especiales" in habilidades and not habilidades["Especiales"]:
+            habilidades.pop("Especiales", None)
+        return habilidades
 
     def _guardar(self):
         nombre = self.vars["nombre"].get().strip()
@@ -737,6 +863,7 @@ class PersonajeEditor(tk.Toplevel):
 
         personaje.act = self._a_entero(self.vars["act"].get(), 0)
         personaje.acumulacion_ki = self._a_entero(self.vars["acumulacion_ki"].get(), 0)
+        personaje.habilidades_secundarias = self._habilidades_secundarias_desde_formulario()
 
         if self.almacenamiento.guardar_personaje(personaje):
             messagebox.showinfo("Guardado", f"Personaje '{personaje.nombre}' guardado correctamente.", parent=self)
@@ -744,6 +871,496 @@ class PersonajeEditor(tk.Toplevel):
             self.callback_menu()
         else:
             messagebox.showerror("Error", "No se pudo guardar el personaje.", parent=self)
+
+
+class VentanaSecundarias(tk.Toplevel):
+    """Ventana para gestionar y tirar habilidades secundarias."""
+
+    def __init__(self, parent, almacenamiento):
+        super().__init__(parent)
+        self.title("Modo Secundarias")
+        self.geometry("1100x760")
+        self.minsize(1000, 680)
+        self.almacenamiento = almacenamiento
+        self.participantes = []
+        self._log_linea_alterna = False
+
+        self.var_objetivo = tk.StringVar()
+        self.var_categoria = tk.StringVar(value="Todas")
+        self.var_habilidad = tk.StringVar()
+        self.var_cansancio = tk.StringVar(value="0")
+        self.var_modificadores = tk.StringVar(value="0")
+        self.var_objetivo_resistencia = tk.StringVar()
+        self.var_tipo_resistencia = tk.StringVar(value="RF")
+        self.var_mod_resistencia = tk.StringVar(value="0")
+        self._cache_habilidades = []
+
+        self._construir_ui()
+
+    def _construir_ui(self):
+        marco_principal = ttk.Frame(self, padding=10)
+        marco_principal.pack(fill="both", expand=True)
+
+        canvas = tk.Canvas(marco_principal, highlightthickness=0)
+        scroll = ttk.Scrollbar(marco_principal, orient="vertical", command=canvas.yview)
+        contenedor = ttk.Frame(canvas)
+
+        contenedor.bind("<Configure>", lambda _evt: canvas.configure(scrollregion=canvas.bbox("all")))
+        ventana_canvas = canvas.create_window((0, 0), window=contenedor, anchor="nw")
+        canvas.bind("<Configure>", lambda evt: canvas.itemconfigure(ventana_canvas, width=evt.width))
+        canvas.configure(yscrollcommand=scroll.set)
+
+        canvas.pack(side="left", fill="both", expand=True)
+        scroll.pack(side="right", fill="y")
+        habilitar_scroll_rueda(canvas, self)
+
+        contenedor.columnconfigure(0, weight=1)
+        contenedor.rowconfigure(2, weight=1)
+
+        panel_pj = ttk.LabelFrame(contenedor, text="PJs", padding=8)
+        panel_pj.grid(row=0, column=0, sticky="ew", pady=(0, 8))
+        panel_pj.columnconfigure(0, weight=1)
+        ttk.Button(panel_pj, text="Añadir PJ", command=lambda: self._anadir_participante(True)).grid(row=0, column=0, sticky="w", pady=(0, 6))
+        self.marco_pj = ttk.Frame(panel_pj)
+        self.marco_pj.grid(row=1, column=0, sticky="ew")
+        self.marco_pj.columnconfigure(0, weight=1)
+
+        panel_pnj = ttk.LabelFrame(contenedor, text="PNJs", padding=8)
+        panel_pnj.grid(row=1, column=0, sticky="ew", pady=(0, 8))
+        panel_pnj.columnconfigure(0, weight=1)
+        ttk.Button(panel_pnj, text="Añadir PNJ", command=lambda: self._anadir_participante(False)).grid(row=0, column=0, sticky="w", pady=(0, 6))
+        self.marco_pnj = ttk.Frame(panel_pnj)
+        self.marco_pnj.grid(row=1, column=0, sticky="ew")
+        self.marco_pnj.columnconfigure(0, weight=1)
+
+        panel_acciones = ttk.LabelFrame(contenedor, text="Tiradas de secundarias", padding=8)
+        panel_acciones.grid(row=2, column=0, sticky="nsew")
+        panel_acciones.columnconfigure(0, weight=0)
+        panel_acciones.columnconfigure(1, weight=1)
+        panel_acciones.columnconfigure(2, weight=0)
+        panel_acciones.rowconfigure(0, weight=1)
+
+        izquierda = ttk.Frame(panel_acciones)
+        izquierda.grid(row=0, column=0, sticky="nsw", padx=(0, 8))
+
+        self.combo_objetivo = self._combo_bloque(izquierda, "Personaje", self.var_objetivo)
+        self.combo_objetivo.bind("<<ComboboxSelected>>", lambda _evt: self._actualizar_habilidades_disponibles())
+        self.combo_categoria = self._combo_bloque(izquierda, "Categoría", self.var_categoria, ["Todas"])
+        self.combo_categoria.bind("<<ComboboxSelected>>", lambda _evt: self._actualizar_habilidades_disponibles())
+        self.combo_habilidad = self._combo_bloque(izquierda, "Habilidad secundaria", self.var_habilidad)
+        self._entrada_bloque(izquierda, "Cansancio gastado (0-5)", self.var_cansancio)
+        self._entrada_bloque(izquierda, "Modificadores (ej: +20-10)", self.var_modificadores)
+
+        ttk.Button(izquierda, text="Tirar habilidad", command=self._tirar_habilidad_secundaria).pack(fill="x", pady=(10, 4))
+        ttk.Button(izquierda, text="Limpiar diálogo", command=self._limpiar_log).pack(fill="x", pady=4)
+
+        centro = ttk.Frame(panel_acciones)
+        centro.grid(row=0, column=1, sticky="nsew", padx=8)
+        centro.columnconfigure(0, weight=1)
+        centro.rowconfigure(0, weight=1)
+
+        self.salida = tk.Text(centro, wrap="word", height=22, state="disabled")
+        self.salida.grid(row=0, column=0, sticky="nsew")
+        scroll_texto = ttk.Scrollbar(centro, orient="vertical", command=self.salida.yview)
+        scroll_texto.grid(row=0, column=1, sticky="ns")
+        self.salida.configure(yscrollcommand=scroll_texto.set)
+        self.salida.configure(font=("TkFixedFont", 10), spacing1=1, spacing3=1)
+        self.salida.tag_configure("linea_par", background="#f3f6fa")
+        self.salida.tag_configure("linea_impar", background="#ffffff")
+        self.salida.tag_configure("tipo_normal", foreground="#1f2937")
+        self.salida.tag_configure("tipo_abierta", foreground="#0b7285")
+        self.salida.tag_configure("tipo_pifia", foreground="#b00020")
+        self.salida.tag_configure("tipo_resistencia", foreground="#3f3f46")
+        self.salida.tag_configure("tipo_dificultad_rutinario", foreground="#6b7280")
+        self.salida.tag_configure("tipo_dificultad_facil", foreground="#4b5563")
+        self.salida.tag_configure("tipo_dificultad_medio", foreground="#1d4ed8")
+        self.salida.tag_configure("tipo_dificultad_dificil", foreground="#0f766e")
+        self.salida.tag_configure("tipo_dificultad_muy_dificil", foreground="#0e7490")
+        self.salida.tag_configure("tipo_dificultad_absurdo", foreground="#7c3aed")
+        self.salida.tag_configure("tipo_dificultad_casi_imposible", foreground="#a16207")
+        self.salida.tag_configure("tipo_dificultad_imposible", foreground="#d97706")
+        self.salida.tag_configure("tipo_dificultad_inhumano", foreground="#ea580c")
+        self.salida.tag_configure("tipo_dificultad_zen", foreground="#b91c1c")
+
+        derecha = ttk.Frame(panel_acciones)
+        derecha.grid(row=0, column=2, sticky="nse", padx=(8, 0))
+        self.combo_objetivo_resistencia = self._combo_bloque(derecha, "Personaje (resistencia)", self.var_objetivo_resistencia)
+        self._combo_bloque(derecha, "Tipo de resistencia", self.var_tipo_resistencia, ["RF", "RE", "RV", "RM", "RP"])
+        self._entrada_bloque(derecha, "Modificador resistencia", self.var_mod_resistencia)
+        ttk.Button(derecha, text="Tirar resistencia", command=self._tirar_resistencia).pack(fill="x", pady=(8, 4))
+
+        self._log("Modo Secundarias listo.")
+
+    def _combo_bloque(self, parent, etiqueta, variable, valores=None):
+        ttk.Label(parent, text=etiqueta).pack(anchor="w", pady=(6, 0))
+        combo = ttk.Combobox(parent, textvariable=variable, state="readonly", width=38)
+        if valores is not None:
+            combo["values"] = valores
+            if valores:
+                variable.set(valores[0])
+        combo.pack(fill="x")
+        return combo
+
+    def _entrada_bloque(self, parent, etiqueta, variable):
+        ttk.Label(parent, text=etiqueta).pack(anchor="w", pady=(6, 0))
+        entrada = ttk.Entry(parent, textvariable=variable)
+        entrada.pack(fill="x")
+        return entrada
+
+    def _log(self, texto, estilo="tipo_normal"):
+        self.salida.configure(state="normal")
+        tag_linea = "linea_par" if self._log_linea_alterna else "linea_impar"
+        self.salida.insert("end", f"{texto}\n", (tag_linea, estilo))
+        self._log_linea_alterna = not self._log_linea_alterna
+        self.salida.see("end")
+        self.salida.configure(state="disabled")
+
+    def _limpiar_log(self):
+        self.salida.configure(state="normal")
+        self.salida.delete("1.0", "end")
+        self.salida.configure(state="disabled")
+        self._log_linea_alterna = False
+        self._log("Diálogo limpiado.")
+
+    def _resultado_total_tirada(self, tirada):
+        if tirada.get("tipo") == "pifia":
+            pifia = tirada.get("pifia", {})
+            return tirada["valor_base"] + tirada["modificador"] + tirada.get("bono_cansancio", 0) - pifia.get("resultado_final", 0)
+        return tirada.get("resultado_total", 0)
+
+    def _dificultad_desde_total(self, total):
+        escala = [
+            (440, "Zen", "tipo_dificultad_zen"),
+            (320, "Inhumano", "tipo_dificultad_inhumano"),
+            (280, "Imposible", "tipo_dificultad_imposible"),
+            (240, "Casi Imposible", "tipo_dificultad_casi_imposible"),
+            (180, "Absurdo", "tipo_dificultad_absurdo"),
+            (140, "Muy Difícil", "tipo_dificultad_muy_dificil"),
+            (120, "Difícil", "tipo_dificultad_dificil"),
+            (80, "Medio", "tipo_dificultad_medio"),
+            (40, "Fácil", "tipo_dificultad_facil"),
+            (20, "Rutinario", "tipo_dificultad_rutinario"),
+        ]
+        for umbral, nombre, estilo in escala:
+            if total > umbral:
+                return nombre, estilo
+        return "Por debajo de rutinario", "tipo_dificultad_rutinario"
+
+    def _seleccionar_personaje_guardado(self, es_pj):
+        personajes = [p for p in self.almacenamiento.cargar_todos_personajes() if bool(getattr(p, "es_pj", False)) == es_pj]
+        if not personajes:
+            messagebox.showinfo("Sin personajes", "No hay personajes del tipo solicitado.", parent=self)
+            return None
+
+        dialogo = tk.Toplevel(self)
+        dialogo.title("Seleccionar personaje")
+        dialogo.transient(self)
+        dialogo.geometry("340x280")
+
+        ttk.Label(dialogo, text="Elige personaje:").pack(anchor="w", padx=10, pady=(10, 4))
+        lista = tk.Listbox(dialogo)
+        lista.pack(fill="both", expand=True, padx=10, pady=6)
+        for personaje in personajes:
+            lista.insert("end", f"{personaje.nombre} ({personaje.tipo})")
+
+        seleccionado = {"indice": None}
+
+        def confirmar():
+            seleccion = lista.curselection()
+            if not seleccion:
+                return
+            seleccionado["indice"] = seleccion[0]
+            dialogo.destroy()
+
+        ttk.Button(dialogo, text="Aceptar", command=confirmar).pack(pady=(0, 10))
+        dialogo.grab_set()
+        dialogo.wait_window()
+
+        if seleccionado["indice"] is None:
+            return None
+        return personajes[seleccionado["indice"]]
+
+    def _generar_nombre_combate(self, nombre_base):
+        existentes = {item["nombre_combate"] for item in self.participantes}
+        if nombre_base not in existentes:
+            return nombre_base
+        indice = 1
+        while f"{nombre_base}{indice}" in existentes:
+            indice += 1
+        return f"{nombre_base}{indice}"
+
+    def _anadir_participante(self, es_pj):
+        personaje = self._seleccionar_personaje_guardado(es_pj)
+        if personaje is None:
+            return
+        nombre_combate = self._generar_nombre_combate(personaje.nombre)
+        self.participantes.append({
+            "personaje": personaje,
+            "es_pj": es_pj,
+            "nombre_combate": nombre_combate,
+        })
+        self._repintar_participantes()
+        self._actualizar_objetivos()
+        self._log(f"Añadido {'PJ' if es_pj else 'PNJ'}: {nombre_combate}")
+
+    def _quitar_participante(self, info):
+        if info in self.participantes:
+            self.participantes.remove(info)
+            self._repintar_participantes()
+            self._actualizar_objetivos()
+            self._log(f"Eliminado: {info['nombre_combate']}")
+
+    def _repintar_participantes(self):
+        for marco in (self.marco_pj, self.marco_pnj):
+            for widget in marco.winfo_children():
+                widget.destroy()
+
+        fila_pj = 0
+        fila_pnj = 0
+        for info in self.participantes:
+            personaje = info["personaje"]
+            secundarias = getattr(personaje, "habilidades_secundarias", {}) or {}
+            total = sum(len(v) for v in secundarias.values())
+            texto = (
+                f"{info['nombre_combate']} ({personaje.tipo}) | "
+                f"Cansancio {personaje.puntos_cansancio} | Secundarias {total}"
+            )
+
+            marco = self.marco_pj if info["es_pj"] else self.marco_pnj
+            fila = fila_pj if info["es_pj"] else fila_pnj
+            if info["es_pj"]:
+                fila_pj += 1
+            else:
+                fila_pnj += 1
+
+            item = ttk.Frame(marco)
+            item.grid(row=fila, column=0, sticky="ew", pady=2)
+            item.columnconfigure(0, weight=1)
+            ttk.Label(item, text=texto).grid(row=0, column=0, sticky="w")
+            ttk.Button(item, text="Quitar", command=lambda actual=info: self._quitar_participante(actual)).grid(
+                row=0, column=1, padx=(8, 0)
+            )
+
+    def _actualizar_objetivos(self):
+        nombres = [item["nombre_combate"] for item in self.participantes]
+        self.combo_objetivo["values"] = nombres
+        self.combo_objetivo_resistencia["values"] = nombres
+        if nombres and self.var_objetivo.get() not in nombres:
+            self.var_objetivo.set(nombres[0])
+        if nombres and self.var_objetivo_resistencia.get() not in nombres:
+            self.var_objetivo_resistencia.set(nombres[0])
+        if not nombres:
+            self.var_objetivo.set("")
+            self.var_objetivo_resistencia.set("")
+        self._actualizar_habilidades_disponibles()
+
+    def _buscar_info(self, nombre_combate):
+        for item in self.participantes:
+            if item["nombre_combate"] == nombre_combate:
+                return item
+        return None
+
+    def _habilidades_formateadas(self, personaje):
+        habilidades = []
+        secundarias = getattr(personaje, "habilidades_secundarias", {}) or {}
+        for categoria, valores in secundarias.items():
+            if not isinstance(valores, dict):
+                continue
+            for habilidad, valor in valores.items():
+                no_desarrollada = isinstance(valor, str) and valor.strip() == "-"
+                sufijo = " [No desarrollada]" if no_desarrollada else ""
+                etiqueta = f"{categoria} > {habilidad} ({valor}){sufijo}"
+                habilidades.append((etiqueta, categoria, habilidad, valor, no_desarrollada))
+        return habilidades
+
+    def _actualizar_habilidades_disponibles(self):
+        info = self._buscar_info(self.var_objetivo.get().strip())
+        if info is None:
+            self.combo_habilidad["values"] = []
+            self.var_habilidad.set("")
+            self.combo_categoria["values"] = ["Todas"]
+            self.var_categoria.set("Todas")
+            self._cache_habilidades = []
+            return
+
+        lista = self._habilidades_formateadas(info["personaje"])
+        categorias = sorted({item[1] for item in lista})
+        valores_categoria = ["Todas", *categorias] if categorias else ["Todas"]
+        self.combo_categoria["values"] = valores_categoria
+        if self.var_categoria.get() not in valores_categoria:
+            self.var_categoria.set("Todas")
+
+        if self.var_categoria.get() != "Todas":
+            lista = [item for item in lista if item[1] == self.var_categoria.get()]
+
+        self._cache_habilidades = lista
+        etiquetas = [item[0] for item in lista]
+        self.combo_habilidad["values"] = etiquetas
+        if etiquetas:
+            if self.var_habilidad.get() not in etiquetas:
+                self.var_habilidad.set(etiquetas[0])
+        else:
+            self.var_habilidad.set("")
+
+    def _desglose_tirada(self, etiqueta, tirada):
+        if tirada.get("tipo") == "pifia":
+            pifia = tirada["pifia"]
+            total = tirada["valor_base"] + tirada["modificador"] + tirada.get("bono_cansancio", 0) - pifia["resultado_final"]
+            self._log(
+                f"{etiqueta}: pifia ({tirada['primera_tirada']} -> {pifia['tirada_pifia']} {pifia['modificador']:+d}) "
+                f"=> total {total}",
+                estilo="tipo_pifia",
+            )
+            return
+
+        tiradas = "+".join(str(t) for t in tirada.get("tiradas", []))
+        estilo = "tipo_abierta" if tirada.get("tipo") == "abierta" else "tipo_normal"
+        self._log(
+            f"{etiqueta}: Base {tirada['valor_base']} {tirada['modificador']:+d} "
+            f"Cansancio {tirada.get('bono_cansancio', 0):+d} Dados({tiradas})={tirada['resultado_dados']} "
+            f"=> {tirada['resultado_total']}",
+            estilo=estilo,
+        )
+
+    def _tirar_habilidad_secundaria(self):
+        nombre = self.var_objetivo.get().strip()
+        if not nombre:
+            messagebox.showwarning("Secundarias", "Selecciona un personaje.", parent=self)
+            return
+
+        info = self._buscar_info(nombre)
+        if info is None:
+            return
+        personaje = info["personaje"]
+
+        habilidades = self._cache_habilidades or self._habilidades_formateadas(personaje)
+        seleccion = self.var_habilidad.get().strip()
+        match = next((h for h in habilidades if h[0] == seleccion), None)
+        if match is None:
+            messagebox.showwarning("Secundarias", "Selecciona una habilidad secundaria válida.", parent=self)
+            return
+
+        _etiqueta, categoria, habilidad, valor_original, no_desarrollada = match
+        if no_desarrollada:
+            messagebox.showwarning(
+                "Secundarias",
+                f"'{habilidad}' no está desarrollada (valor '-'). No se puede lanzar.",
+                parent=self,
+            )
+            return
+        if isinstance(valor_original, (int, float)):
+            valor_base = int(valor_original)
+        else:
+            texto = str(valor_original).strip()
+            try:
+                valor_base = int(texto)
+            except ValueError:
+                messagebox.showwarning(
+                    "Secundarias",
+                    f"La habilidad '{habilidad}' tiene un valor no numérico ({valor_original}).",
+                    parent=self,
+                )
+                return
+
+        cansancio = entero_opcional(self.var_cansancio.get())
+        if cansancio is None or cansancio < 0 or cansancio > 5:
+            messagebox.showwarning("Secundarias", "El cansancio debe estar entre 0 y 5.", parent=self)
+            return
+        if cansancio > personaje.puntos_cansancio:
+            messagebox.showwarning("Secundarias", "No tiene suficiente cansancio para ese gasto.", parent=self)
+            return
+
+        try:
+            modificador = parsear_modificadores(self.var_modificadores.get())
+        except ValueError:
+            messagebox.showwarning("Secundarias", "Formato de modificadores inválido.", parent=self)
+            return
+
+        tirada = tirar_ataque(valor_base, modificador=modificador, cansancio_gastado=cansancio)
+
+        if cansancio > 0:
+            personaje.puntos_cansancio = max(0, personaje.puntos_cansancio - cansancio)
+            self.almacenamiento.guardar_personaje(personaje)
+
+        self._log(
+            f"{info['nombre_combate']} -> {categoria} / {habilidad} | valor base {valor_base} | "
+            f"mod {modificador:+d} | cansancio {cansancio}"
+        )
+        self._log(self._frase_habilidad_secundaria(info["nombre_combate"], habilidad))
+        self._desglose_tirada("Tirada secundaria", tirada)
+
+        total = self._resultado_total_tirada(tirada)
+        dificultad, estilo_dificultad = self._dificultad_desde_total(total)
+        self._log(f"Dificultad alcanzada: {dificultad} (resultado {total})", estilo=estilo_dificultad)
+        self._repintar_participantes()
+
+    def _frase_habilidad_secundaria(self, nombre, habilidad):
+        habilidad_norm = _normalizar_texto(habilidad)
+        frases = {
+            "acrobacias": f"{nombre} ejecuta una acrobacia imposible y mide cada movimiento al milímetro.",
+            "intimidar": f"{nombre} clava la mirada y deja el ambiente helado.",
+            "rastrear": f"{nombre} estudia huellas y signos buscando el rastro correcto.",
+            "medicina": f"{nombre} evalúa heridas con precisión casi quirúrgica.",
+            "p. fuerza": f"{nombre} reúne potencia explosiva para superar el obstáculo.",
+            "venenos": f"{nombre} analiza sustancias con cautela y conocimiento experto.",
+            "forja": f"{nombre} trabaja el material con técnica paciente y segura.",
+            "sigilo": f"{nombre} se desliza entre sombras sin hacer ruido.",
+            "ocultarse": f"{nombre} busca cobertura y desaparece de la vista.",
+            "persuasion": f"{nombre} escoge las palabras exactas para convencer.",
+            "buscar": f"{nombre} revisa cada detalle con atención minuciosa.",
+            "advertir": f"{nombre} mantiene los sentidos alerta ante cualquier señal.",
+            "ciencia": f"{nombre} conecta teoría y práctica para resolver el problema.",
+            "historia": f"{nombre} recurre a conocimientos antiguos para interpretar la situación.",
+            "navegacion": f"{nombre} ajusta rumbo y referencias para no perder el camino.",
+            "frialdad": f"{nombre} respira hondo y mantiene la calma bajo presión.",
+            "res. dolor": f"{nombre} aprieta los dientes y sigue adelante pese al dolor.",
+            "alquimia": f"{nombre} combina reactivos con precisión y extremo cuidado.",
+            "musica": f"{nombre} deja que el ritmo guíe una interpretación impecable.",
+        }
+        if habilidad_norm in frases:
+            return frases[habilidad_norm]
+        return f"{nombre} pone a prueba su destreza en {habilidad}."
+
+    def _tirar_resistencia(self):
+        nombre = self.var_objetivo_resistencia.get().strip()
+        if not nombre:
+            messagebox.showwarning("Resistencias", "Selecciona un personaje.", parent=self)
+            return
+
+        info = self._buscar_info(nombre)
+        if info is None:
+            return
+        personaje = info["personaje"]
+
+        tipo = self.var_tipo_resistencia.get().strip().upper()
+        mapa = {
+            "RF": ("resistencia_fisica", "RF"),
+            "RE": ("resistencia_enfermedades", "RE"),
+            "RV": ("resistencia_venenos", "RV"),
+            "RM": ("resistencia_magica", "RM"),
+            "RP": ("resistencia_psiquica", "RP"),
+        }
+        if tipo not in mapa:
+            messagebox.showwarning("Resistencias", "Tipo de resistencia inválido.", parent=self)
+            return
+
+        try:
+            modificador = parsear_modificadores(self.var_mod_resistencia.get())
+        except ValueError:
+            messagebox.showwarning("Resistencias", "Formato de modificador inválido.", parent=self)
+            return
+
+        atributo, etiqueta = mapa[tipo]
+        base = int(getattr(personaje, atributo, 0) or 0)
+        tirada = tirar_dado()
+        total = base + tirada + modificador
+
+        self._log(
+            f"{info['nombre_combate']} -> Resistencia {etiqueta}: "
+            f"Base {base} + 1d100({tirada}) {modificador:+d} = {total}"
+            , estilo="tipo_resistencia"
+        )
+        self._log("Tirada de resistencia: sin abierta ni pifia.", estilo="tipo_resistencia")
 
 
 class VentanaCombate(tk.Toplevel):
@@ -2120,6 +2737,7 @@ def cargar_personaje_desde_archivo(ruta):
 
     personaje.act = int(datos.get("act", 0) or 0)
     personaje.acumulacion_ki = int(datos.get("acumulacion_ki", 0) or 0)
+    personaje.habilidades_secundarias = normalizar_habilidades_secundarias(datos.get("habilidades_secundarias", {}))
     return personaje
 
 

@@ -14,6 +14,7 @@ from modelos.personaje import (
     Mentalista,
     Personaje,
     Warlock,
+    normalizar_habilidades_secundarias,
 )
 from utilidades.rutas import en_modo_ejecutable, ruta_datos_persistentes, ruta_recurso
 
@@ -159,6 +160,7 @@ class AlmacenamientoPersonajes:
 
         personaje.act = int(datos.get('act', 0) or 0)
         personaje.acumulacion_ki = int(datos.get('acumulacion_ki', 0) or 0)
+        personaje.habilidades_secundarias = normalizar_habilidades_secundarias(datos.get('habilidades_secundarias', {}))
         return personaje
     
     def guardar_personaje(self, personaje):

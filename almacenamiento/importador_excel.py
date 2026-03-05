@@ -22,6 +22,21 @@ except ImportError:  # pragma: no cover
     openpyxl = None
 
 
+MAPEO_CATEGORIAS_SECUNDARIAS = {
+    "atleticas": "Atléticas",
+    "sociales": "Sociales",
+    "perc.": "Percepción",
+    "perc": "Percepción",
+    "percepcion": "Percepción",
+    "intelectuales": "Intelectuales",
+    "vigor": "Vigor",
+    "subterfugio": "Subterfugio",
+    "creativas": "Creativas",
+    "especial": "Especiales",
+    "especiales": "Especiales",
+}
+
+
 def normalizar_numero_excel(valor, default=0):
     """Convierte celdas Excel a entero, tolerando texto mixto como '(46)' o 'X'."""
     if valor is None:
@@ -216,6 +231,69 @@ def _extraer_armas(ws_combate):
     return armas_limpias, turno_doble_armas
 
 
+def _valor_habilidad_secundaria(valor):
+    if valor is None:
+        return "-"
+    if isinstance(valor, bool):
+        return int(valor)
+    if isinstance(valor, (int, float)):
+        return int(valor)
+
+    texto = str(valor).strip()
+    if not texto or texto.upper() in {"X", "#N/A"}:
+        return "-"
+
+    if re.fullmatch(r"-?\d+", texto):
+        return int(texto)
+    return texto
+
+
+def _extraer_habilidades_secundarias(ws_principal):
+    if ws_principal is None:
+        return {}
+
+    inicio = None
+    for fila in ws_principal.iter_rows(min_row=1, max_row=220, min_col=1, max_col=60):
+        for celda in fila:
+            if _normalizar_texto(celda.value) == "habilidades secundarias":
+                inicio = celda
+                break
+        if inicio is not None:
+            break
+
+    if inicio is None:
+        return {}
+
+    columna_categoria = inicio.column
+    columna_habilidad = columna_categoria + 1
+    columna_valor_final = columna_categoria + 5
+    habilidades = {}
+    categoria_actual = None
+
+    for fila_idx in range(inicio.row + 1, ws_principal.max_row + 1):
+        texto_categoria = ws_principal.cell(fila_idx, columna_categoria).value
+        categoria_norm = _normalizar_texto(texto_categoria)
+        if categoria_norm in MAPEO_CATEGORIAS_SECUNDARIAS:
+            categoria_actual = MAPEO_CATEGORIAS_SECUNDARIAS[categoria_norm]
+            habilidades.setdefault(categoria_actual, {})
+
+        if categoria_actual is None:
+            continue
+
+        nombre_habilidad = ws_principal.cell(fila_idx, columna_habilidad).value
+        if nombre_habilidad is None:
+            continue
+        nombre_habilidad = str(nombre_habilidad).strip()
+        if not nombre_habilidad or nombre_habilidad in {"-", "--"} or nombre_habilidad.upper() == "#N/A":
+            continue
+
+        valor_final = ws_principal.cell(fila_idx, columna_valor_final).value
+        habilidades[categoria_actual][nombre_habilidad] = _valor_habilidad_secundaria(valor_final)
+
+    # Solo conservamos categorías con habilidades detectadas.
+    return {categoria: valores for categoria, valores in habilidades.items() if valores}
+
+
 def importar_personaje_desde_excel(ruta_excel):
     """Importa un personaje desde una ficha .xlsm y devuelve (personaje, metadatos)."""
     if openpyxl is None:  # pragma: no cover
@@ -288,6 +366,7 @@ def importar_personaje_desde_excel(ruta_excel):
     cv_libres = normalizar_numero_excel(_texto_celda(ws_psiquicos, "I17"), default=normalizar_numero_excel(_texto_celda(ws_resumen, "H60"), default=0))
 
     armas, turno_doble_armas = _extraer_armas(ws_combate)
+    habilidades_secundarias = _extraer_habilidades_secundarias(ws_principal)
     principal = armas[0] if armas else {}
 
     datos_tipado = {
@@ -393,6 +472,7 @@ def importar_personaje_desde_excel(ruta_excel):
 
     personaje.act = max(0, act)
     personaje.acumulacion_ki = max(0, acumulacion_ki)
+    personaje.habilidades_secundarias = habilidades_secundarias
 
     metadatos = {
         "ruta": str(ruta),
@@ -401,5 +481,7 @@ def importar_personaje_desde_excel(ruta_excel):
         "act": act,
         "acumulacion_ki": acumulacion_ki,
         "armas_detectadas": len(armas),
+        "habilidades_secundarias_categorias": len(habilidades_secundarias),
+        "habilidades_secundarias_total": sum(len(v) for v in habilidades_secundarias.values()),
     }
     return personaje, metadatos
