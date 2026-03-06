@@ -1,7 +1,7 @@
 # Manual de Usuario
 ## Anima: Beyond Fantasy - Gestor de Personajes
 
-Version del manual: 05/03/2026
+Version del manual: 06/03/2026
 
 ---
 
@@ -92,6 +92,10 @@ Opciones disponibles:
 ### 7.1 Crear personaje
 - Permite crear personajes de todos los arquetipos soportados.
 - Puedes editar armamento, resistencias y habilidades secundarias.
+- Si el personaje es PNJ, puedes definir si tiene **Natura**:
+  - Con Natura: tiradas automaticas normales (incluye abierta).
+  - Sin Natura: no obtiene tiradas abiertas automaticas.
+- Los PJ siempre tienen Natura.
 
 ### 7.2 Importar desde Excel
 - Soporta fichas `.xlsm` y `.xlsx`.
@@ -103,6 +107,7 @@ Opciones disponibles:
 ### 7.3 Editar personaje
 - Carga cualquier personaje guardado.
 - Permite modificar atributos, armas y secundarias.
+- En PNJ, permite activar o desactivar Natura.
 
 ---
 
@@ -114,6 +119,7 @@ El modo **Combate** permite:
 - Pifias, abiertas, criticos y localizacion.
 - Acciones de recurso (PV, cansancio, Ki, Zeon, CV, acumulaciones).
 - Lanzar poder magico y mental.
+- En tiradas automaticas de PNJ, si el PNJ no tiene Natura, la tirada abierta queda desactivada.
 
 ---
 
@@ -165,8 +171,8 @@ Flujo recomendado:
 2. Crear y subir un tag, por ejemplo:
 
 ```bash
-git tag v1.3.0
-git push origin v1.3.0
+git tag v1.4.0
+git push origin v1.4.0
 ```
 
 3. GitHub Actions compila Windows y adjunta el ZIP a la release.

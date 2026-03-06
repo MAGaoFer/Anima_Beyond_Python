@@ -12,6 +12,8 @@ También incluye un **Modo Secundarias** para gestionar tiradas de habilidades s
 
 El historial de cambios está en `CHANGELOG.md`.
 
+Ultima version documentada: `1.4.0` (2026-03-06).
+
 ## Qué hace la aplicación
 
 - Crear personajes de distintos arquetipos (Guerrero, Domine, Mago, Mentalista, Warlock y mixtos)
@@ -22,6 +24,7 @@ El historial de cambios está en `CHANGELOG.md`.
   - iniciativa (automática o manual)
   - ataque/defensa
   - pifias, tiradas abiertas y críticos
+  - regla de Natura en PNJ (si no tiene Natura, no obtiene tiradas abiertas automaticas)
   - poderes mágicos y mentales
   - acciones de recurso (incluyendo acumulación de Zeón/Ki)
 - Gestionar modo secundarias con:

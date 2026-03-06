@@ -123,3 +123,38 @@ def test_resolver_ataque_devuelve_diccionario_compatible():
     assert isinstance(resultado, dict)
     for clave in ("impacto", "contraataque", "ataque", "defensa", "ta_ataque", "tipo_defensa"):
         assert clave in resultado
+
+
+def test_pnj_sin_natura_no_obtiene_tirada_abierta_automatica(monkeypatch):
+    atacante = _guerrero("A", ataque=50, armas=[_arma("Espada", ta="FIL")])
+    defensor = _guerrero("D", defensa=0, armas=[])
+    atacante.es_pj = False
+    atacante.natura = False
+    defensor.es_pj = False
+    defensor.natura = True
+
+    pa = PersonajeCombate(atacante)
+    pd = PersonajeCombate(defensor)
+    pa.configurar_arma_ataque(atacante.armas[0])
+
+    secuencia = iter([95, 10])
+    monkeypatch.setattr("combate.dados.tirar_dado", lambda: next(secuencia))
+
+    resultado = resolver_ataque(pa, pd, tipo_defensa="Esquiva", daño_arma=50, ta_ataque="FIL")
+
+    assert resultado["ataque"]["tipo"] == "normal"
+    assert resultado["ataque"]["tiradas"] == [95]
+    assert resultado["ataque"]["resultado_dados"] == 95
+
+
+def test_iniciativa_pnj_sin_natura_no_abre(monkeypatch):
+    personaje = _guerrero("PNJ", armas=[])
+    personaje.es_pj = False
+    personaje.natura = False
+    pc = PersonajeCombate(personaje)
+
+    monkeypatch.setattr("combate.dados.tirar_dado", lambda: 95)
+    iniciativa = pc.calcular_iniciativa()
+
+    assert iniciativa == personaje.turno + 95
+    assert "ABIERTA" not in pc.desglose_iniciativa

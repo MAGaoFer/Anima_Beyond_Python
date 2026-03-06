@@ -14,7 +14,23 @@ El formato está inspirado en Keep a Changelog y versionado semántico (`MAJOR.M
 
 ### Fixed
 - Pendiente.
-- Ajuste técnico para forzar nuevo disparo de pipeline de release.
+
+## [1.4.0] - 2026-03-06
+
+### Added
+- Nueva propiedad `Natura` para PNJ (CLI y GUI).
+- Edicion de `Natura` en la ficha de personaje.
+- Tests de regresion para validar PNJ sin Natura en combate e iniciativa.
+
+### Changed
+- Los PJ ahora fuerzan `Natura = True` por diseno.
+- Las tiradas automaticas de ataque, defensa e iniciativa respetan `Natura`:
+	- con Natura: comportamiento habitual (incluye abierta)
+	- sin Natura: nunca hay tirada abierta automatica
+- Compatibilidad hacia atras en carga JSON: PNJ antiguos sin campo `natura` se interpretan con Natura.
+
+### Fixed
+- Persistencia de `Natura` en guardado/carga de personajes en JSON.
 
 ## [1.3.0] - 2026-03-05
 

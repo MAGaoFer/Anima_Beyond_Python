@@ -89,6 +89,13 @@ def personaje_puede_usar_mentalismo(personaje):
     return bool(getattr(personaje, 'usa_mentalismo', False))
 
 
+def personaje_tiene_natura(personaje):
+    """Indica si el personaje puede realizar tiradas abiertas automáticas."""
+    if bool(getattr(personaje, 'es_pj', False)):
+        return True
+    return bool(getattr(personaje, 'natura', True))
+
+
 class Personaje:
     """
     Clase base para representar un personaje en Ánima: Beyond Fantasy.
@@ -113,7 +120,8 @@ class Personaje:
                  arma_danio=None, arma_rotura=None, arma_entereza=None,
                  arma_tipo_danio=None, arma_ta=None, armaduras_ta=None,
                  entereza_armadura=0, armas=None, turno_doble_armas=None,
-                 tipo_defensa_preferida='Parada', bonificador=0, penalizador=0):
+                 tipo_defensa_preferida='Parada', bonificador=0, penalizador=0,
+                 natura=None):
         """
         Inicializa un personaje con sus atributos básicos.
         
@@ -151,6 +159,7 @@ class Personaje:
         self.resistencia_magica = resistencia_magica
         self.resistencia_psiquica = resistencia_psiquica
         self.es_pj = es_pj
+        self.natura = True if es_pj else (True if natura is None else bool(natura))
         self.arma_nombre = arma_nombre
         self.arma_turno = arma_turno
         self.arma_danio = arma_danio
@@ -229,6 +238,7 @@ class Personaje:
             'resistencia_magica': self.resistencia_magica,
             'resistencia_psiquica': self.resistencia_psiquica,
             'es_pj': self.es_pj,
+            'natura': self.natura,
             'arma_nombre': self.arma_nombre,
             'arma_turno': self.arma_turno,
             'arma_danio': self.arma_danio,
@@ -270,6 +280,7 @@ class Personaje:
             resistencia_magica=datos.get('resistencia_magica', 0),
             resistencia_psiquica=datos.get('resistencia_psiquica', 0),
             es_pj=datos.get('es_pj', False),
+            natura=datos.get('natura'),
             arma_nombre=datos.get('arma_nombre'),
             arma_turno=datos.get('arma_turno'),
             arma_danio=datos.get('arma_danio'),
@@ -303,6 +314,7 @@ class Personaje:
             f"  Puntos de Cansancio: {self.puntos_cansancio}",
             f"  Turno:               {self.turno}",
             f"  Control:             {'PJ' if self.es_pj else 'PNJ'}",
+            f"  Natura:              {'Sí' if self.natura else 'No'}",
             f"  Arma principal:      {self.arma_nombre if self.arma_nombre else '-'}",
             f"  Arma (T/D/R/E/TD):   {self.arma_turno if self.arma_turno is not None else '-'} / {self.arma_danio if self.arma_danio is not None else '-'} / {self.arma_rotura if self.arma_rotura is not None else '-'} / {self.arma_entereza if self.arma_entereza is not None else '-'} / {self.arma_tipo_danio if self.arma_tipo_danio else '-'}",
             f"  Habilidad de Ataque: {self.habilidad_ataque}",
@@ -337,7 +349,8 @@ class Domine(Personaje):
                  arma_danio=None, arma_rotura=None, arma_entereza=None,
                  arma_tipo_danio=None, arma_ta=None, armaduras_ta=None,
                  entereza_armadura=0, armas=None, turno_doble_armas=None,
-                 tipo_defensa_preferida='Parada', bonificador=0, penalizador=0):
+                 tipo_defensa_preferida='Parada', bonificador=0, penalizador=0,
+                 natura=None):
         super().__init__(
             nombre=nombre,
             puntos_vida=puntos_vida,
@@ -368,6 +381,7 @@ class Domine(Personaje):
             tipo_defensa_preferida=tipo_defensa_preferida,
             bonificador=bonificador,
             penalizador=penalizador,
+            natura=natura,
         )
         self.tipo = "Domine"
         self.usa_ki = True
@@ -390,6 +404,7 @@ class Domine(Personaje):
             resistencia_magica=datos.get('resistencia_magica', 0),
             resistencia_psiquica=datos.get('resistencia_psiquica', 0),
             es_pj=datos.get('es_pj', False),
+            natura=datos.get('natura'),
             arma_nombre=datos.get('arma_nombre'),
             arma_turno=datos.get('arma_turno'),
             arma_danio=datos.get('arma_danio'),
@@ -436,7 +451,7 @@ class Mago(Personaje):
                  arma_danio=None, arma_rotura=None, arma_entereza=None,
                  arma_tipo_danio=None, arma_ta=None, armaduras_ta=None,
                  entereza_armadura=0, armas=None, turno_doble_armas=None,
-                 bonificador=0, penalizador=0):
+                 bonificador=0, penalizador=0, natura=None):
         """
         Inicializa un mago.
         
@@ -469,7 +484,8 @@ class Mago(Personaje):
             armas=armas,
             turno_doble_armas=turno_doble_armas,
             bonificador=bonificador,
-            penalizador=penalizador)
+            penalizador=penalizador,
+            natura=natura)
         self.zeon = zeon
         self.proyeccion_magica = proyeccion_magica
         self.tipo = "Mago"
@@ -515,6 +531,7 @@ class Mago(Personaje):
             resistencia_magica=datos.get('resistencia_magica', 0),
             resistencia_psiquica=datos.get('resistencia_psiquica', 0),
             es_pj=datos.get('es_pj', False),
+            natura=datos.get('natura'),
             arma_nombre=datos.get('arma_nombre'),
             arma_turno=datos.get('arma_turno'),
             arma_danio=datos.get('arma_danio'),
@@ -546,6 +563,7 @@ class Mago(Personaje):
             f"  Zeón:                {self.zeon}",
             f"  Turno:               {self.turno}",
             f"  Control:             {'PJ' if self.es_pj else 'PNJ'}",
+            f"  Natura:              {'Sí' if self.natura else 'No'}",
             f"  Arma principal:      {self.arma_nombre if self.arma_nombre else '-'}",
             f"  Arma (T/D/R/E/TD):   {self.arma_turno if self.arma_turno is not None else '-'} / {self.arma_danio if self.arma_danio is not None else '-'} / {self.arma_rotura if self.arma_rotura is not None else '-'} / {self.arma_entereza if self.arma_entereza is not None else '-'} / {self.arma_tipo_danio if self.arma_tipo_danio else '-'}",
             f"  Proyección Mágica:   {self.proyeccion_magica}",
@@ -582,7 +600,7 @@ class Mentalista(Personaje):
                  arma_danio=None, arma_rotura=None, arma_entereza=None,
                  arma_tipo_danio=None, arma_ta=None, armaduras_ta=None,
                  entereza_armadura=0, armas=None, turno_doble_armas=None,
-                 bonificador=0, penalizador=0):
+                 bonificador=0, penalizador=0, natura=None):
         """
         Inicializa un mentalista.
         
@@ -616,7 +634,8 @@ class Mentalista(Personaje):
             armas=armas,
             turno_doble_armas=turno_doble_armas,
             bonificador=bonificador,
-            penalizador=penalizador)
+            penalizador=penalizador,
+            natura=natura)
         self.potencial_psiquico = potencial_psiquico
         self.proyeccion_psiquica = proyeccion_psiquica
         self.cv_libres = cv_libres
@@ -665,6 +684,7 @@ class Mentalista(Personaje):
             resistencia_magica=datos.get('resistencia_magica', 0),
             resistencia_psiquica=datos.get('resistencia_psiquica', 0),
             es_pj=datos.get('es_pj', False),
+            natura=datos.get('natura'),
             arma_nombre=datos.get('arma_nombre'),
             arma_turno=datos.get('arma_turno'),
             arma_danio=datos.get('arma_danio'),
@@ -695,6 +715,7 @@ class Mentalista(Personaje):
             f"  Puntos de Cansancio: {self.puntos_cansancio}",
             f"  Turno:               {self.turno}",
             f"  Control:             {'PJ' if self.es_pj else 'PNJ'}",
+            f"  Natura:              {'Sí' if self.natura else 'No'}",
             f"  Arma principal:      {self.arma_nombre if self.arma_nombre else '-'}",
             f"  Arma (T/D/R/E/TD):   {self.arma_turno if self.arma_turno is not None else '-'} / {self.arma_danio if self.arma_danio is not None else '-'} / {self.arma_rotura if self.arma_rotura is not None else '-'} / {self.arma_entereza if self.arma_entereza is not None else '-'} / {self.arma_tipo_danio if self.arma_tipo_danio else '-'}",
             f"  Potencial Psíquico:  {self.potencial_psiquico}",
@@ -723,7 +744,8 @@ class Warlock(Domine):
                  arma_danio=None, arma_rotura=None, arma_entereza=None,
                  arma_tipo_danio=None, arma_ta=None, armaduras_ta=None,
                  entereza_armadura=0, armas=None, turno_doble_armas=None,
-                 tipo_defensa_preferida='Parada', bonificador=0, penalizador=0):
+                 tipo_defensa_preferida='Parada', bonificador=0, penalizador=0,
+                 natura=None):
         super().__init__(
             nombre=nombre,
             puntos_vida=puntos_vida,
@@ -754,6 +776,7 @@ class Warlock(Domine):
             tipo_defensa_preferida=tipo_defensa_preferida,
             bonificador=bonificador,
             penalizador=penalizador,
+            natura=natura,
         )
         self.zeon = zeon
         self.proyeccion_magica = proyeccion_magica
@@ -786,6 +809,7 @@ class Warlock(Domine):
             resistencia_magica=datos.get('resistencia_magica', 0),
             resistencia_psiquica=datos.get('resistencia_psiquica', 0),
             es_pj=datos.get('es_pj', False),
+            natura=datos.get('natura'),
             arma_nombre=datos.get('arma_nombre'),
             arma_turno=datos.get('arma_turno'),
             arma_danio=datos.get('arma_danio'),
@@ -824,7 +848,7 @@ class HechiceroMentalista(Mago):
                  arma_danio=None, arma_rotura=None, arma_entereza=None,
                  arma_tipo_danio=None, arma_ta=None, armaduras_ta=None,
                  entereza_armadura=0, armas=None, turno_doble_armas=None,
-                 bonificador=0, penalizador=0):
+                 bonificador=0, penalizador=0, natura=None):
         super().__init__(
             nombre=nombre,
             puntos_vida=puntos_vida,
@@ -854,6 +878,7 @@ class HechiceroMentalista(Mago):
             turno_doble_armas=turno_doble_armas,
             bonificador=bonificador,
             penalizador=penalizador,
+            natura=natura,
         )
         self.potencial_psiquico = potencial_psiquico
         self.proyeccion_psiquica = proyeccion_psiquica
@@ -890,6 +915,7 @@ class HechiceroMentalista(Mago):
             resistencia_magica=datos.get('resistencia_magica', 0),
             resistencia_psiquica=datos.get('resistencia_psiquica', 0),
             es_pj=datos.get('es_pj', False),
+            natura=datos.get('natura'),
             arma_nombre=datos.get('arma_nombre'),
             arma_turno=datos.get('arma_turno'),
             arma_danio=datos.get('arma_danio'),
@@ -929,7 +955,8 @@ class GuerreroMentalista(Domine):
                  arma_danio=None, arma_rotura=None, arma_entereza=None,
                  arma_tipo_danio=None, arma_ta=None, armaduras_ta=None,
                  entereza_armadura=0, armas=None, turno_doble_armas=None,
-                 tipo_defensa_preferida='Parada', bonificador=0, penalizador=0):
+                 tipo_defensa_preferida='Parada', bonificador=0, penalizador=0,
+                 natura=None):
         super().__init__(
             nombre=nombre,
             puntos_vida=puntos_vida,
@@ -960,6 +987,7 @@ class GuerreroMentalista(Domine):
             tipo_defensa_preferida=tipo_defensa_preferida,
             bonificador=bonificador,
             penalizador=penalizador,
+            natura=natura,
         )
         self.potencial_psiquico = potencial_psiquico
         self.proyeccion_psiquica = proyeccion_psiquica
@@ -995,6 +1023,7 @@ class GuerreroMentalista(Domine):
             resistencia_magica=datos.get('resistencia_magica', 0),
             resistencia_psiquica=datos.get('resistencia_psiquica', 0),
             es_pj=datos.get('es_pj', False),
+            natura=datos.get('natura'),
             arma_nombre=datos.get('arma_nombre'),
             arma_turno=datos.get('arma_turno'),
             arma_danio=datos.get('arma_danio'),

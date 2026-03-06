@@ -3,6 +3,7 @@ Sistema de cálculo de iniciativa para combate en Ánima: Beyond Fantasy.
 """
 
 from .dados import tirar_iniciativa
+from modelos.personaje import personaje_tiene_natura
 
 
 class PersonajeCombate:
@@ -77,7 +78,10 @@ class PersonajeCombate:
         Returns:
             int: Iniciativa calculada
         """
-        iniciativa_base, desglose = tirar_iniciativa(self.turno_base)
+        iniciativa_base, desglose = tirar_iniciativa(
+            self.turno_base,
+            permitir_abierta=personaje_tiene_natura(self.personaje),
+        )
         penalizador = self.obtener_penalizador_automatico(cansancio_gastado=0)
         self.iniciativa = iniciativa_base + penalizador
         if penalizador:

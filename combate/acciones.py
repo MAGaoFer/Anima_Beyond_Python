@@ -10,7 +10,7 @@ from combate.resultados import (
     RoturaArmaduraResultado,
 )
 from combate.tipos import DefensaTipo, normalizar_tipo_defensa
-from modelos.personaje import Mago, Mentalista, normalizar_ta
+from modelos.personaje import Mago, Mentalista, normalizar_ta, personaje_tiene_natura
 
 
 def obtener_valor_ataque(personaje):
@@ -187,7 +187,12 @@ def resolver_ataque(atacante_pc, defensor_pc, modificador_ataque=0, cansancio_ga
     # Tirada de ataque
     if resultado_ataque is None:
         penalizador_auto_ataque = atacante_pc.obtener_penalizador_automatico(cansancio_gastado)
-        resultado_ataque = tirar_ataque(valor_ataque, modificador_ataque + penalizador_auto_ataque, cansancio_gastado)
+        resultado_ataque = tirar_ataque(
+            valor_ataque,
+            modificador_ataque + penalizador_auto_ataque,
+            cansancio_gastado,
+            permitir_abierta=personaje_tiene_natura(atacante),
+        )
     
     if resultado_ataque['tipo'] == 'pifia':
         return ResultadoAtaque(
@@ -211,7 +216,12 @@ def resolver_ataque(atacante_pc, defensor_pc, modificador_ataque=0, cansancio_ga
     # Tirada de defensa
     if resultado_defensa is None:
         penalizador_auto_defensa = defensor_pc.obtener_penalizador_automatico(cansancio_defensa)
-        resultado_defensa = tirar_defensa(valor_defensa, modificador_defensa + penalizador_auto_defensa, cansancio_defensa)
+        resultado_defensa = tirar_defensa(
+            valor_defensa,
+            modificador_defensa + penalizador_auto_defensa,
+            cansancio_defensa,
+            permitir_abierta=personaje_tiene_natura(defensor),
+        )
     defensor_pc.registrar_defensa()
     ataque_total = resultado_ataque['resultado_total']
     defensa_total = resultado_defensa['resultado_total']

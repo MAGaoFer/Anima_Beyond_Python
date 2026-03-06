@@ -19,6 +19,7 @@ from modelos.personaje import (
     Warlock,
     normalizar_ta,
     personaje_tiene_ki,
+    personaje_tiene_natura,
 )
 from almacenamiento.almacenamiento_json import AlmacenamientoPersonajes
 from combate.gestor_combate import GestorCombate
@@ -145,6 +146,23 @@ def solicitar_control_personaje():
     print("  1. PJ (tiradas manuales)")
     print("  2. PNJ (tiradas automáticas)")
     opcion = solicitar_numero("Selecciona control (1-2): ", minimo=1, maximo=2)
+    return opcion == 1
+
+
+def solicitar_natura_personaje(es_pj, valor_actual=True):
+    """Solicita si un PNJ tiene Natura. Los PJ siempre la tienen."""
+    if es_pj:
+        return True
+
+    print("\nNatura del PNJ:")
+    print("  1. Con Natura (puede abrir tiradas)")
+    print("  2. Sin Natura (no abre tiradas)")
+    recomendada = 1 if valor_actual else 2
+    opcion = solicitar_numero(
+        f"Selecciona Natura (1-2, recomendado {recomendada}): ",
+        minimo=1,
+        maximo=2,
+    )
     return opcion == 1
 
 
@@ -589,6 +607,7 @@ def asistente_crear_personaje(almacenamiento):
     
     tipo = solicitar_numero("Selecciona el tipo (1-7): ", minimo=1, maximo=7)
     es_pj = solicitar_control_personaje()
+    natura = solicitar_natura_personaje(es_pj)
     
     # Atributos comunes a todos los personajes
     print("\n--- Atributos básicos ---")
@@ -652,6 +671,7 @@ def asistente_crear_personaje(almacenamiento):
             resistencia_magica=resistencia_magica,
             resistencia_psiquica=resistencia_psiquica,
             es_pj=es_pj,
+            natura=natura,
             arma_nombre=arma_nombre,
             arma_turno=arma_turno,
             arma_danio=arma_danio,
@@ -705,6 +725,7 @@ def asistente_crear_personaje(almacenamiento):
             resistencia_magica=resistencia_magica,
             resistencia_psiquica=resistencia_psiquica,
             es_pj=es_pj,
+            natura=natura,
             arma_nombre=arma_nombre,
             arma_turno=arma_turno,
             arma_danio=arma_danio,
@@ -739,6 +760,7 @@ def asistente_crear_personaje(almacenamiento):
             resistencia_magica=resistencia_magica,
             resistencia_psiquica=resistencia_psiquica,
             es_pj=es_pj,
+            natura=natura,
             arma_nombre=arma_nombre,
             arma_turno=arma_turno,
             arma_danio=arma_danio,
@@ -773,6 +795,7 @@ def asistente_crear_personaje(almacenamiento):
             resistencia_magica=resistencia_magica,
             resistencia_psiquica=resistencia_psiquica,
             es_pj=es_pj,
+            natura=natura,
             arma_nombre=arma_nombre,
             arma_turno=arma_turno,
             arma_danio=arma_danio,
@@ -826,6 +849,7 @@ def asistente_crear_personaje(almacenamiento):
             resistencia_magica=resistencia_magica,
             resistencia_psiquica=resistencia_psiquica,
             es_pj=es_pj,
+            natura=natura,
             arma_nombre=arma_nombre,
             arma_turno=arma_turno,
             arma_danio=arma_danio,
@@ -866,6 +890,7 @@ def asistente_crear_personaje(almacenamiento):
             resistencia_magica=resistencia_magica,
             resistencia_psiquica=resistencia_psiquica,
             es_pj=es_pj,
+            natura=natura,
             armaduras_ta=armaduras_ta,
             entereza_armadura=entereza_armadura,
         )
@@ -915,6 +940,7 @@ def asistente_crear_personaje(almacenamiento):
             resistencia_magica=resistencia_magica,
             resistencia_psiquica=resistencia_psiquica,
             es_pj=es_pj,
+            natura=natura,
             arma_nombre=arma_nombre,
             arma_turno=arma_turno,
             arma_danio=arma_danio,
@@ -955,8 +981,9 @@ def listar_personajes(almacenamiento):
         print(f"  Total de personajes: {len(personajes)}\n")
         for i, personaje in enumerate(personajes, 1):
             control = 'PJ' if getattr(personaje, 'es_pj', False) else 'PNJ'
+            texto_natura = " | Natura" if personaje_tiene_natura(personaje) else " | Sin Natura"
             arma = obtener_resumen_arma(personaje)
-            print(f"  {i}. {personaje.nombre} ({personaje.tipo}, {control}) | {arma}")
+            print(f"  {i}. {personaje.nombre} ({personaje.tipo}, {control}{texto_natura}) | {arma}")
     
     input("\nPresiona Enter para continuar...")
 
@@ -1051,6 +1078,7 @@ def editar_personaje(almacenamiento):
         ('puntos_cansancio', 'Puntos de Cansancio'),
         ('turno', 'Turno'),
         ('es_pj', 'Control (PJ/PNJ)'),
+        ('natura', 'Natura (solo PNJ)'),
         ('arma_principal', 'Arma principal'),
         ('daño', 'Daño'),
         ('ta_fil', 'TA FIL'),
@@ -1171,6 +1199,13 @@ def editar_personaje(almacenamiento):
         print(f"\nValor actual de {descripcion}: {valor_actual}")
         if nombre_attr == 'es_pj':
             personaje.es_pj = solicitar_control_personaje()
+            personaje.natura = solicitar_natura_personaje(personaje.es_pj, valor_actual=getattr(personaje, 'natura', True))
+        elif nombre_attr == 'natura':
+            if getattr(personaje, 'es_pj', False):
+                personaje.natura = True
+                print("\nLos PJ siempre tienen Natura.")
+            else:
+                personaje.natura = solicitar_natura_personaje(False, valor_actual=getattr(personaje, 'natura', True))
         else:
             nuevo_valor = solicitar_numero("Nuevo valor: ", minimo=0)
             setattr(personaje, nombre_attr, nuevo_valor)
@@ -1650,7 +1685,8 @@ def realizar_ataque(personaje_combate, gestor, objetivo_forzado=None, bono_ataqu
         resultado_ataque = tirar_ataque(
             valor_base=valor_base_ataque,
             modificador=modificador_ataque + bono_ataque_extra,
-            cansancio_gastado=cansancio_gastado
+            cansancio_gastado=cansancio_gastado,
+            permitir_abierta=personaje_tiene_natura(atacante),
         )
     
     print("\n" + "=" * 60)

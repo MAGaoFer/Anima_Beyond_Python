@@ -1,4 +1,4 @@
-# Plantilla de Release (Windows)
+# Release Windows - v1.4.0
 
 ## ✅ Descarga rápida
 
@@ -19,13 +19,14 @@ Las fichas se guardan junto a la aplicación, en:
 
 ## 🆕 Novedades de esta versión
 
-- [Añadir cambio 1]
-- [Añadir cambio 2]
-- [Añadir cambio 3]
+- Nueva propiedad **Natura** para PNJ en CLI y GUI.
+- Los PNJ **sin Natura** no obtienen tiradas abiertas automaticas en iniciativa, ataque ni defensa.
+- Los PJ ahora se comportan siempre con Natura activa (como hasta ahora).
+- Compatibilidad hacia atras: PNJ antiguos sin campo `natura` siguen cargando con Natura activa.
 
-## 🛠️ Notas conocidas (opcional)
+## 🛠️ Notas conocidas
 
-- [Añadir incidencia conocida, si aplica]
+- No hay incidencias nuevas conocidas para esta version.
 
 ## 🔁 Actualizar desde una versión anterior
 

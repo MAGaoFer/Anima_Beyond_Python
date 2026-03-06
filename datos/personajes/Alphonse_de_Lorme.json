@@ -53,12 +53,91 @@
       "habilidad_ataque": 35,
       "habilidad_parada": 130,
       "es_escudo": true
+    },
+    {
+      "nombre": "Espada bastarda",
+      "turno": 10,
+      "daño": 100,
+      "rotura": 7,
+      "entereza": 15,
+      "tipo_danio": "FIL",
+      "habilidad_ataque": 75,
+      "habilidad_parada": 100,
+      "es_escudo": false
     }
   ],
   "turno_doble_armas": 0,
   "tipo_defensa_preferida": "Parada",
   "bonificador": 0,
   "penalizador": 0,
+  "habilidades_secundarias": {
+    "Atléticas": {
+      "Acrobacias": 25,
+      "Atletismo": 35,
+      "Montar": 30,
+      "Nadar": 20,
+      "Trepar": -30,
+      "Saltar": 20,
+      "Pilotar": -15
+    },
+    "Sociales": {
+      "Estilo": -30,
+      "Intimidar": -25,
+      "Liderazgo": -30,
+      "Persuasión": 40,
+      "Comercio": -25,
+      "Callejeo": -25,
+      "Etiqueta": 20
+    },
+    "Percepción": {
+      "Advertir": 60,
+      "Buscar": 40,
+      "Rastrear": -25
+    },
+    "Intelectuales": {
+      "Animales": -25,
+      "Ciencia": "-",
+      "Ley": -25,
+      "Herbolaria": -25,
+      "Historia": 70,
+      "Tactica": -20,
+      "Medicina": "-",
+      "Memorizar": 10,
+      "Navegación": 10,
+      "Ocultismo": -25,
+      "Tasación": "-",
+      "V. Mágica": "-",
+      "Invest. Psi": "-"
+    },
+    "Vigor": {
+      "Frialdad": 20,
+      "P. Fuerza": 40,
+      "Res. Dolor": -20
+    },
+    "Subterfugio": {
+      "Cerrajería": -15,
+      "Disfraz": -15,
+      "Ocultarse": -30,
+      "Robo": -15,
+      "Sigilo": -30,
+      "Trampería": -15,
+      "Venenos": "-"
+    },
+    "Creativas": {
+      "Arte": -30,
+      "Baile": "-",
+      "Forja": 45,
+      "Runas": -15,
+      "Alquimia": -25,
+      "Animismo": -30,
+      "Música": "-",
+      "T. Manos": -15,
+      "Caligrafía ritual": -15,
+      "Orfebrería": -15,
+      "Confección": -15,
+      "Conf. marionetas": -30
+    }
+  },
   "act": 5,
   "acumulacion_ki": 0
 }

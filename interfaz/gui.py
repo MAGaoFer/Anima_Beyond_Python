@@ -37,6 +37,7 @@ from modelos.personaje import (
     personaje_puede_usar_magia,
     personaje_puede_usar_mentalismo,
     personaje_tiene_ki,
+    personaje_tiene_natura,
     normalizar_habilidades_secundarias,
 )
 from utilidades.rutas import ruta_recurso
@@ -323,6 +324,7 @@ class PersonajeEditor(tk.Toplevel):
         self.vars = {
             "nombre": tk.StringVar(),
             "control": tk.StringVar(value="PJ"),
+            "natura": tk.StringVar(value="Con Natura"),
             "tipo": tk.StringVar(value="Guerrero"),
             "puntos_vida": tk.StringVar(value="100"),
             "puntos_cansancio": tk.StringVar(value="5"),
@@ -389,8 +391,10 @@ class PersonajeEditor(tk.Toplevel):
         general.pack(fill="x", pady=6)
 
         self._fila_campo(general, "Nombre", self.vars["nombre"], 0)
-        self._fila_combo(general, "Control", self.vars["control"], ["PJ", "PNJ"], 1)
-        combo_tipo = self._fila_combo(general, "Tipo", self.vars["tipo"], TIPOS_PERSONAJE, 2)
+        self.combo_control = self._fila_combo(general, "Control", self.vars["control"], ["PJ", "PNJ"], 1)
+        self.combo_control.bind("<<ComboboxSelected>>", lambda _evt: self._actualizar_control_natura())
+        self.combo_natura = self._fila_combo(general, "Natura", self.vars["natura"], ["Con Natura", "Sin Natura"], 2)
+        combo_tipo = self._fila_combo(general, "Tipo", self.vars["tipo"], TIPOS_PERSONAJE, 3)
         combo_tipo.bind("<<ComboboxSelected>>", lambda _evt: self._actualizar_visibilidad_tipo())
 
         basicos = ttk.LabelFrame(contenido, text="Atributos básicos", padding=10)
@@ -475,6 +479,7 @@ class PersonajeEditor(tk.Toplevel):
         ttk.Button(acciones, text="Volver al menú", command=self.destroy).pack(side="left")
         ttk.Button(acciones, text="Crear personaje", command=self._guardar).pack(side="right")
 
+        self._actualizar_control_natura()
         self._actualizar_armas_visibles()
 
     def _fila_campo(self, parent, texto, variable, fila):
@@ -514,6 +519,14 @@ class PersonajeEditor(tk.Toplevel):
             self.fila_acumulacion_ki.grid_remove()
             self.vars["puntos_ki"].set("0")
             self.vars["acumulacion_ki"].set("0")
+
+    def _actualizar_control_natura(self):
+        es_pj = self.vars["control"].get() == "PJ"
+        if es_pj:
+            self.vars["natura"].set("Con Natura")
+            self.combo_natura.configure(state="disabled")
+            return
+        self.combo_natura.configure(state="readonly")
 
     def _actualizar_armas_visibles(self):
         cantidad = self._a_entero(self.vars["numero_armas"].get(), 0)
@@ -608,6 +621,7 @@ class PersonajeEditor(tk.Toplevel):
     def _cargar_personaje(self, personaje):
         self.vars["nombre"].set(personaje.nombre)
         self.vars["control"].set("PJ" if getattr(personaje, "es_pj", False) else "PNJ")
+        self.vars["natura"].set("Con Natura" if personaje_tiene_natura(personaje) else "Sin Natura")
         self.vars["puntos_vida"].set(str(personaje.puntos_vida))
         self.vars["puntos_cansancio"].set(str(personaje.puntos_cansancio))
         self.vars["puntos_ki"].set(str(personaje.puntos_ki))
@@ -681,6 +695,7 @@ class PersonajeEditor(tk.Toplevel):
             self._actualizar_armas_visibles()
 
         self._actualizar_habilidades_secundarias_ui(getattr(personaje, "habilidades_secundarias", {}))
+        self._actualizar_control_natura()
 
     def _a_entero(self, valor, minimo=0):
         try:
@@ -740,6 +755,7 @@ class PersonajeEditor(tk.Toplevel):
 
         tipo = self.vars["tipo"].get()
         es_pj = self.vars["control"].get() == "PJ"
+        natura = True if es_pj else (self.vars["natura"].get() == "Con Natura")
         armaduras_ta = {codigo: self._a_entero(self.vars[f"ta_{codigo}"].get(), 0) for codigo in TA_CODIGOS}
         puntos_ki = self._a_entero(self.vars["puntos_ki"].get(), 0) if tipo in TIPOS_CON_KI else 0
         daño_base = self._a_entero(self.vars["daño"].get(), 0) if tipo in ("Domine", "Mago", "Mentalista", "Warlock", "Hechicero mentalista", "Guerrero mentalista") else 0
@@ -758,6 +774,7 @@ class PersonajeEditor(tk.Toplevel):
             "resistencia_magica": self._a_entero(self.vars["resistencia_magica"].get(), 0),
             "resistencia_psiquica": self._a_entero(self.vars["resistencia_psiquica"].get(), 0),
             "es_pj": es_pj,
+            "natura": natura,
             "armaduras_ta": armaduras_ta,
             "entereza_armadura": self._a_entero(self.vars["entereza_armadura"].get(), 0),
         }
@@ -1276,7 +1293,12 @@ class VentanaSecundarias(tk.Toplevel):
             messagebox.showwarning("Secundarias", "Formato de modificadores inválido.", parent=self)
             return
 
-        tirada = tirar_ataque(valor_base, modificador=modificador, cansancio_gastado=cansancio)
+        tirada = tirar_ataque(
+            valor_base,
+            modificador=modificador,
+            cansancio_gastado=cansancio,
+            permitir_abierta=personaje_tiene_natura(personaje),
+        )
 
         if cansancio > 0:
             personaje.puntos_cansancio = max(0, personaje.puntos_cansancio - cansancio)
@@ -1770,7 +1792,10 @@ class VentanaCombate(tk.Toplevel):
                 else:
                     pc.desglose_iniciativa = f"Manual: {pc.turno_base} + {tirada_manual} = {pc.iniciativa}"
             else:
-                iniciativa, desglose = tirar_iniciativa(pc.turno_base)
+                iniciativa, desglose = tirar_iniciativa(
+                    pc.turno_base,
+                    permitir_abierta=personaje_tiene_natura(pc.personaje),
+                )
                 pc.iniciativa = iniciativa + penalizador_total
                 if penalizador_total:
                     pc.desglose_iniciativa = f"{desglose}; auto {penalizador_auto:+d}, pers {penalizador_personal:+d} => {pc.iniciativa}"
@@ -1998,7 +2023,12 @@ class VentanaCombate(tk.Toplevel):
                 tirada_potencial = self._tirada_manual_a_dict(getattr(personaje, "potencial_psiquico", 0), valor_manual)
 
         if tirada_potencial is None:
-            tirada_potencial = tirar_ataque(getattr(personaje, "potencial_psiquico", 0), modificador=0, cansancio_gastado=0)
+            tirada_potencial = tirar_ataque(
+                getattr(personaje, "potencial_psiquico", 0),
+                modificador=0,
+                cansancio_gastado=0,
+                permitir_abierta=personaje_tiene_natura(personaje),
+            )
         self._desglose_tirada(f"Potencial psíquico ({personaje.nombre})", tirada_potencial)
         return True, tirada_potencial
 
@@ -2165,7 +2195,12 @@ class VentanaCombate(tk.Toplevel):
             if not continuar_manual:
                 return
             if tirada_manual is None:
-                tirada = tirar_ataque(getattr(personaje, "proyeccion_magica", 0), modificador=0, cansancio_gastado=0)
+                tirada = tirar_ataque(
+                    getattr(personaje, "proyeccion_magica", 0),
+                    modificador=0,
+                    cansancio_gastado=0,
+                    permitir_abierta=personaje_tiene_natura(personaje),
+                )
             else:
                 tirada = self._tirada_manual_a_dict(getattr(personaje, "proyeccion_magica", 0), tirada_manual)
             self._log(f"{personaje.nombre} lanza poder mágico.")
@@ -2183,7 +2218,12 @@ class VentanaCombate(tk.Toplevel):
         if not continuar_manual:
             return
         if tirada_manual is None:
-            tirada = tirar_ataque(getattr(personaje, "proyeccion_psiquica", 0), modificador=0, cansancio_gastado=0)
+            tirada = tirar_ataque(
+                getattr(personaje, "proyeccion_psiquica", 0),
+                modificador=0,
+                cansancio_gastado=0,
+                permitir_abierta=personaje_tiene_natura(personaje),
+            )
         else:
             tirada = self._tirada_manual_a_dict(getattr(personaje, "proyeccion_psiquica", 0), tirada_manual)
         self._log(f"{personaje.nombre} lanza poder mental.")

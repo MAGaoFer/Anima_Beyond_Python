@@ -74,6 +74,7 @@ def test_migracion_desde_legacy_json(tmp_path):
     assert personaje.nombre == "Veterano"
     assert personaje.puntos_ki == 0
     assert personaje.daño == 0
+    assert personaje.natura is True
 
 
 def test_cargar_todos_personajes_tipos_mixtos(tmp_path):
@@ -224,3 +225,27 @@ def test_guardar_y_cargar_arquetipos_mixtos(tmp_path):
     assert isinstance(almacenamiento.cargar_personaje("W"), Warlock)
     assert isinstance(almacenamiento.cargar_personaje("HM"), HechiceroMentalista)
     assert isinstance(almacenamiento.cargar_personaje("GM"), GuerreroMentalista)
+
+
+def test_guardar_y_cargar_natura_pnj(tmp_path):
+    almacenamiento = AlmacenamientoPersonajes(tmp_path / "personajes.json")
+    personaje = Personaje(
+        nombre="SinNatura",
+        puntos_vida=90,
+        puntos_cansancio=5,
+        turno=80,
+        habilidad_ataque=60,
+        habilidad_defensa=55,
+        daño=0,
+        armadura=2,
+        armaduras_ta=_base_ta(2),
+        es_pj=False,
+        natura=False,
+    )
+
+    assert almacenamiento.guardar_personaje(personaje) is True
+    cargado = almacenamiento.cargar_personaje("SinNatura")
+
+    assert isinstance(cargado, Personaje)
+    assert cargado.es_pj is False
+    assert cargado.natura is False

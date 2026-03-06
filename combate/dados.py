@@ -68,7 +68,7 @@ def tirar_abierta_desde_primera(primera_tirada, umbral_inicial=90):
     return resultado_total, tiradas
 
 
-def tirar_iniciativa(turno_base):
+def tirar_iniciativa(turno_base, permitir_abierta=True):
     """
     Calcula la iniciativa para un personaje según las reglas de Ánima.
     
@@ -80,6 +80,7 @@ def tirar_iniciativa(turno_base):
     
     Args:
         turno_base (int): Turno base del personaje
+        permitir_abierta (bool): Si se permiten tiradas abiertas (>= 90)
         
     Returns:
         tuple: (iniciativa_final, desglose_texto)
@@ -108,7 +109,7 @@ def tirar_iniciativa(turno_base):
         return iniciativa, desglose_texto
     
     # Verificar tirada abierta
-    if primera_tirada >= 90:
+    if permitir_abierta and primera_tirada >= 90:
         resultado_total, tiradas = tirar_abierta_desde_primera(primera_tirada, umbral_inicial=90)
         iniciativa = turno_base + resultado_total
         tiradas_str = " + ".join(str(t) for t in tiradas)
@@ -173,7 +174,7 @@ def resolver_pifia(primer_resultado):
     }
 
 
-def tirar_ataque(valor_base, modificador=0, cansancio_gastado=0):
+def tirar_ataque(valor_base, modificador=0, cansancio_gastado=0, permitir_abierta=True):
     """
     Realiza una tirada de ataque con reglas de pifia y abierta.
     
@@ -181,6 +182,7 @@ def tirar_ataque(valor_base, modificador=0, cansancio_gastado=0):
         valor_base (int): Habilidad base de ataque
         modificador (int): Modificadores externos
         cansancio_gastado (int): Puntos de cansancio gastados (0-5)
+        permitir_abierta (bool): Si se permiten tiradas abiertas (>= 90)
         
     Returns:
         dict: Detalles de la tirada de ataque
@@ -200,7 +202,7 @@ def tirar_ataque(valor_base, modificador=0, cansancio_gastado=0):
             'pifia': pifia_info
         }
     
-    if primera_tirada >= 90:
+    if permitir_abierta and primera_tirada >= 90:
         resultado_total, tiradas = tirar_abierta_desde_primera(primera_tirada, umbral_inicial=90)
         return {
             'tipo': 'abierta',
@@ -225,7 +227,7 @@ def tirar_ataque(valor_base, modificador=0, cansancio_gastado=0):
     }
 
 
-def tirar_defensa(valor_base, modificador=0, cansancio_gastado=0):
+def tirar_defensa(valor_base, modificador=0, cansancio_gastado=0, permitir_abierta=True):
     """
     Realiza una tirada de defensa con reglas de pifia y abierta.
     
@@ -233,6 +235,7 @@ def tirar_defensa(valor_base, modificador=0, cansancio_gastado=0):
         valor_base (int): Habilidad base de defensa
         modificador (int): Modificadores externos
         cansancio_gastado (int): Puntos de cansancio gastados (0-5)
+        permitir_abierta (bool): Si se permiten tiradas abiertas (>= 90)
         
     Returns:
         dict: Detalles de la tirada de defensa
@@ -254,7 +257,7 @@ def tirar_defensa(valor_base, modificador=0, cansancio_gastado=0):
             'resultado_total': resultado_total
         }
     
-    if primera_tirada >= 90:
+    if permitir_abierta and primera_tirada >= 90:
         resultado_total, tiradas = tirar_abierta_desde_primera(primera_tirada, umbral_inicial=90)
         return {
             'tipo': 'abierta',

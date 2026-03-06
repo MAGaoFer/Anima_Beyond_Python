@@ -48,6 +48,73 @@
   "tipo_defensa_preferida": "Parada",
   "bonificador": 0,
   "penalizador": 0,
+  "habilidades_secundarias": {
+    "Atléticas": {
+      "Acrobacias": 10,
+      "Atletismo": 30,
+      "Montar": 10,
+      "Nadar": 10,
+      "Trepar": 30,
+      "Saltar": 20,
+      "Pilotar": 25
+    },
+    "Sociales": {
+      "Estilo": 20,
+      "Intimidar": 10,
+      "Liderazgo": 20,
+      "Persuasión": 25,
+      "Comercio": 25,
+      "Callejeo": 25,
+      "Etiqueta": 25
+    },
+    "Percepción": {
+      "Advertir": 50,
+      "Buscar": 30,
+      "Rastrear": 50
+    },
+    "Intelectuales": {
+      "Animales": 45,
+      "Ciencia": 25,
+      "Ley": 25,
+      "Herbolaria": 45,
+      "Historia": 25,
+      "Tactica": 25,
+      "Medicina": 25,
+      "Memorizar": 25,
+      "Navegación": 25,
+      "Ocultismo": 25,
+      "Tasación": 25,
+      "V. Mágica": 70
+    },
+    "Vigor": {
+      "Frialdad": 10,
+      "P. Fuerza": 20,
+      "Res. Dolor": 10
+    },
+    "Subterfugio": {
+      "Cerrajería": 25,
+      "Disfraz": 25,
+      "Ocultarse": 10,
+      "Robo": 25,
+      "Sigilo": 45,
+      "Trampería": 45,
+      "Venenos": 25
+    },
+    "Creativas": {
+      "Arte": 20,
+      "Baile": 10,
+      "Forja": 25,
+      "Runas": 25,
+      "Alquimia": 25,
+      "Animismo": 20,
+      "Música": 20,
+      "T. Manos": 40,
+      "Caligrafía ritual": 25,
+      "Orfebrería": 25,
+      "Confección": 25,
+      "Conf. marionetas": 20
+    }
+  },
   "zeon": 440,
   "proyeccion_magica": 15,
   "act": 40,
